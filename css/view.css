@@ -221,6 +221,47 @@ body {
   color: rgba(248, 250, 252, .88);
   text-shadow: 0 1px 6px var(--night), 0 0 10px var(--night);
 }
+/* Số lượt Thắp Sáng hiển thị dưới tên */
+.lantern-likes {
+  display: inline-flex; align-items: center; gap: 3px;
+  margin-top: -2px; padding: 1px 8px;
+  font-size: .66rem; font-weight: 600; line-height: 1.5; white-space: nowrap;
+  color: var(--amber-soft);
+  background: rgba(15, 23, 42, .66);
+  border: 1px solid rgba(253, 230, 138, .35);
+  border-radius: 999px;
+}
+
+/* Quầng sáng phía sau đèn - chỉ hiện ở các đèn Top */
+.lantern-halo {
+  position: absolute; left: 50%; top: 31px;
+  width: 124px; height: 124px; margin: -62px 0 0 -62px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(253, 230, 138, .5) 0%, rgba(245, 158, 11, .2) 38%, rgba(245, 158, 11, 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+.lantern.is-top .lantern-halo { opacity: 1; animation: halo 2.6s ease-in-out infinite; }
+.lantern.is-top .lantern-name { color: var(--amber-soft); font-weight: 600; }
+.lantern.is-top .lantern-likes {
+  color: var(--night);
+  background: var(--amber-soft); border-color: var(--amber-soft);
+  box-shadow: 0 0 14px rgba(253, 230, 138, .65);
+}
+.lantern.rank-1 .lantern-halo { width: 168px; height: 168px; margin: -84px 0 0 -84px; }
+.lantern.rank-1 .lantern-halo::after {      /* vòng sáng xoay quanh đèn Top 1 */
+  content: ""; position: absolute; top: 22px; left: 22px; right: 22px; bottom: 22px;
+  border-radius: 50%;
+  border: 1px dashed rgba(253, 230, 138, .6);
+  animation: spin 16s linear infinite;
+}
+@keyframes halo {
+  0%, 100% { transform: scale(.86); opacity: .7; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .lantern:hover .lantern-body,
 .lantern:focus-visible .lantern-body { box-shadow:
     0 0 calc(30px + var(--glow, 0) * 4px) rgba(253, 230, 138, .75),
@@ -262,12 +303,19 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
 .letter-scene {
   position: relative;
   width: 100%;
-  height: calc(var(--paper-h) + var(--env-h) * .3);
+  height: var(--paper-h);
+  --env-top: calc((var(--paper-h) - var(--env-h)) / 2);   /* phong thư nằm giữa khung */
 }
+
+/* Trạng thái đã đọc: phong thư đã được đưa đi, chỉ còn lá thư */
+.letter-scene.is-read .env-back,
+.letter-scene.is-read .env-front,
+.letter-scene.is-read .env-flap,
+.letter-scene.is-read .env-seal { display: none; }
 
 /* Phong thư */
 .env-back, .env-front {
-  position: absolute; left: 0; bottom: 0;
+  position: absolute; left: 0; top: var(--env-top);
   width: 100%; height: var(--env-h);
 }
 .env-back {
@@ -288,7 +336,7 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
 .env-flap {
   position: absolute; left: 0;
   width: 100%; height: calc(var(--env-h) * .56);
-  bottom: calc(var(--env-h) * .44);
+  top: var(--env-top);
   z-index: 4;
   transform-origin: 50% 0;
   background: linear-gradient(180deg, #F3ECDD 0%, #E6DDCA 100%);
@@ -296,20 +344,19 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
           clip-path: polygon(0 0, 100% 0, 50% 100%);
   will-change: transform;
 }
-.env-flap.is-open {         /* trạng thái đã mở: nắp lật lên và nằm sau lá thư */
+.env-flap.is-open {         /* nắp đã lật qua 90°: nằm sau lá thư, thấy mặt trong */
   z-index: 1;
-  transform: perspective(900px) rotateX(180deg);
   background: linear-gradient(180deg, #D6C9AE 0%, #CBBE9F 100%);
 }
 .env-seal {                 /* con dấu sáp đỏ */
   position: absolute; left: 50%;
   width: 38px; height: 38px; margin-left: -19px;
-  bottom: calc(var(--env-h) * .44 - 19px);
+  top: calc(var(--env-top) + var(--env-h) * .56 - 19px);
   z-index: 5;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #B4233C 0%, #8B1A2D 55%, #5E0F1E 100%);
   box-shadow: 0 3px 8px rgba(0, 0, 0, .45), inset 0 1px 2px rgba(255, 255, 255, .25);
-  opacity: 0; pointer-events: none;   /* mặc định (trạng thái đã mở): ẩn */
+  pointer-events: none;
 }
 .env-seal::after {
   content: "\2726"; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -318,11 +365,18 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
 }
 
 /* Lá thư */
-.letter-paper {
-  position: absolute; left: 4%;
-  width: 92%; height: var(--paper-h);
-  bottom: calc(var(--env-h) * .22);
+.paper-wrap {
+  position: absolute; left: 0; right: 0; top: 0;
+  height: calc(var(--env-top) + var(--env-h));   /* đáy = đáy phong thư */
   z-index: 2;
+}
+.paper-wrap.is-tucked {     /* chỉ cắt phần thò xuống dưới đáy phong thư, phía trên để tự do */
+  -webkit-clip-path: polygon(-60% -500%, 160% -500%, 160% 100%, -60% 100%);
+          clip-path: polygon(-60% -500%, 160% -500%, 160% 100%, -60% 100%);
+}
+.letter-paper {
+  position: absolute; left: 0; top: 0;
+  width: 100%; height: var(--paper-h);
   display: flex;
   color: var(--ink);
   background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 30%, #FBF3E0 100%);
@@ -334,7 +388,7 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
 }
 .letter-scroll {
   flex: 1 1 auto; min-width: 0;
-  padding: 22px 24px calc(var(--env-h) * .8);
+  padding: 22px 24px 26px;
   overflow-y: auto; overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin; scrollbar-color: rgba(245, 158, 11, .5) transparent;
@@ -386,6 +440,10 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
   font-size: .75rem; font-weight: 600;
   color: var(--amber); background: var(--night); border-radius: 999px;
 }
+.btn-primary.is-lit {        /* đã thắp sáng lá thư này */
+  background: var(--amber-soft); border-color: var(--amber-soft);
+  box-shadow: 0 0 18px rgba(253, 230, 138, .55);
+}
 .btn-primary.is-pulse { animation: pulse .5s ease; }
 @keyframes pulse {
   0%   { box-shadow: 0 0 0 0 rgba(253, 230, 138, .8); }
@@ -412,7 +470,7 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
   .topbar .btn:not(.btn-icon) { padding: 0 14px; }
   .topbar { gap: 8px; }
   .hero { top: calc(68px + env(safe-area-inset-top, 0px)); }
-  .letter-scroll { padding: 18px 18px calc(var(--env-h) * .8); }
+  .letter-scroll { padding: 18px 18px 22px; }
   .letter-actions .btn { flex: 1 1 auto; padding: 0 12px; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
@@ -421,6 +479,7 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
 
 /* ---------- Giảm chuyển động ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .water::after, .lantern-flame, .btn-primary.is-pulse { animation: none; }
+  .water::after, .lantern-flame, .btn-primary.is-pulse,
+  .lantern.is-top .lantern-halo, .lantern.rank-1 .lantern-halo::after { animation: none; }
   .toast, .btn, .hero { transition: none; }
 }
