@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gửi lời tri ân · 20/11</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/send.css">
+</head>
+<body>
+
+  <!--
+    ===== TRANG GỬI THƯ – 4 BƯỚC =====
+    Bước 1: tên + lớp (ghi ở dòng 1 của thiệp)   Bước 2: lời chúc (từ dòng 2, hết dòng sang tờ mới)
+    Bước 3: ảnh kỷ niệm (bấm Hoàn tất → ảnh bay vào thiệp)   Bước 4: chọn con dấu, giữ 1,5s để đóng nến sáp
+    Mọi chuyển động nằm trong js/send.js (GSAP), CSS chỉ định hình.
+
+    Dữ liệu đẩy lên node "wishes" (6 trường theo rule): id, sender, isAnonymous, message, imageUrl, timestamp
+    LƯU Ý: nhiều ảnh -> imageUrl là các link Cloudinary nối bằng dấu phẩy ",".
+    Trang xem (view.js) tách bằng imageUrl.split(",") (1 ảnh thì không đổi).
+  -->
+
+  <!-- Bộ biểu tượng con dấu (dùng lại ở nút chọn + trên dấu sáp) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="stamp-0" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="3"/>
+        <text x="50" y="59" text-anchor="middle" font-family="Playfair Display, serif" font-weight="700" font-size="26" fill="currentColor">20/11</text>
+      </symbol>
+      <symbol id="stamp-1" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M27 64 V38 Q38 34 50 40 Q62 34 73 38 V64 Q62 60 50 66 Q38 60 27 64 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M50 40 V66" stroke="currentColor" stroke-width="3"/>
+      </symbol>
+      <symbol id="stamp-2" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="3"/>
+        <g fill="none" stroke="currentColor" stroke-width="2.6">
+          <ellipse cx="50" cy="34" rx="7" ry="13"/>
+          <ellipse cx="50" cy="34" rx="7" ry="13" transform="rotate(72 50 50)"/>
+          <ellipse cx="50" cy="34" rx="7" ry="13" transform="rotate(144 50 50)"/>
+          <ellipse cx="50" cy="34" rx="7" ry="13" transform="rotate(216 50 50)"/>
+          <ellipse cx="50" cy="34" rx="7" ry="13" transform="rotate(288 50 50)"/>
+        </g>
+        <circle cx="50" cy="50" r="4" fill="currentColor"/>
+      </symbol>
+      <symbol id="stamp-3" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M38 60 Q34 40 50 28 Q66 40 62 60 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M42 60 L45 68 H55 L58 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M50 44 Q54 52 50 58 Q46 52 50 44 Z" fill="currentColor"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="bg" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+  </div>
+
+  <header class="topbar">
+    <h1 class="brand">Gửi lời tri ân</h1>
+    <nav class="nav">
+      <a class="nav-link" href="index.html">Trang chủ</a>
+      <a class="nav-link" href="view.html">Xem lời chúc</a>
+    </nav>
+  </header>
+
+  <main class="stage" id="stage" data-step="0">
+
+    <ol class="steps" id="steps" aria-label="Các bước gửi thư">
+      <li class="is-active"><span class="dot">1</span><span class="txt">Người gửi</span></li>
+      <li><span class="dot">2</span><span class="txt">Lời chúc</span></li>
+      <li><span class="dot">3</span><span class="txt">Ảnh</span></li>
+      <li><span class="dot">4</span><span class="txt">Đóng dấu</span></li>
+    </ol>
+
+    <div class="prompt-wrap">
+      <h2 class="prompt" id="prompt">Cho thầy cô biết bạn là ai</h2>
+    </div>
+
+    <!-- Phong bì + thiệp -->
+    <div class="scene" id="scene">
+
+      <svg class="flap" id="flap" viewBox="0 0 720 160" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="fl-g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FBF9F3"/><stop offset="1" stop-color="#E9E3D3"/>
+          </linearGradient>
+        </defs>
+        <path d="M0 0 L720 0 L360 160 Z" fill="url(#fl-g)" stroke="#fff" stroke-opacity=".75" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+
+      <div class="sheetstack" id="sheetstack">
+        <!-- Tờ thiệp đầu: dòng 1 = tên + lớp, từ dòng 2 = lời chúc -->
+        <article class="sheet sheet-first" id="sheetFirst">
+          <div class="line1">
+            <label class="l1-label" for="senderName">Gửi:</label>
+            <input class="l1-input l1-name" type="text" id="senderName" maxlength="40" autocomplete="off" placeholder="Tên của bạn">
+            <label class="l1-label" for="senderClass">Lớp:</label>
+            <input class="l1-input l1-class" type="text" id="senderClass" maxlength="12" autocomplete="off" placeholder="12A1">
+            <span class="anon-text">Ẩn danh</span>
+          </div>
+          <textarea class="ta" id="messageFirst" spellcheck="false" aria-label="Lời chúc" placeholder="Em/Con xin gửi đến thầy cô lời cảm ơn chân thành nhất…"></textarea>
+          <span class="sheet-no"></span>
+        </article>
+      </div>
+
+      <!-- Mặt trước phong bì -->
+      <svg class="pocket" id="pocket" viewBox="0 0 720 250" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="pk-base" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F8F5EC"/><stop offset="1" stop-color="#E4DECE"/>
+          </linearGradient>
+          <linearGradient id="pk-wing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FBF9F3"/><stop offset="1" stop-color="#EAE5D8"/>
+          </linearGradient>
+          <linearGradient id="pk-bottom" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F3EFE4"/><stop offset="1" stop-color="#DDD6C4"/>
+          </linearGradient>
+        </defs>
+        <path d="M0 6 L284 116 L436 116 L720 6 L720 250 L0 250 Z" fill="url(#pk-base)"/>
+        <path d="M0 6 L284 116 L0 250 Z" fill="url(#pk-wing)" opacity=".9"/>
+        <path d="M720 6 L436 116 L720 250 Z" fill="url(#pk-wing)" opacity=".9"/>
+        <path d="M0 250 L284 116 L436 116 L720 250 Z" fill="url(#pk-bottom)"/>
+        <path d="M0 6 L284 116 L436 116 L720 6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>
+      </svg>
+
+      <!-- Dấu sáp -->
+      <div class="seal" id="seal" data-wax="0" aria-hidden="true">
+        <span class="seal-ripple"></span>
+        <span class="seal-wax"><span class="seal-ring"></span></span>
+        <svg class="seal-emblem" viewBox="0 0 100 100"><use id="sealUse" href="#stamp-0"/></svg>
+      </div>
+    </div>
+
+    <!-- Điều khiển theo từng bước -->
+    <div class="panels" id="panels">
+
+      <section class="panel" data-panel="0" aria-label="Người gửi">
+        <label class="switch">
+          <input type="checkbox" id="anonToggle">
+          <span class="track" aria-hidden="true"></span>
+          <span class="switch-text">Gửi ẩn danh</span>
+        </label>
+        <p class="hint">Chỉ cần nhập tên hoặc lớp. Nếu để trống tên, lời chúc sẽ gửi từ “Tập thể lớp”.<br>Chọn ẩn danh thì thầy cô chỉ thấy chữ “Ẩn danh”.</p>
+      </section>
+
+      <section class="panel" data-panel="1" aria-label="Lời chúc">
+        <div class="pager">
+          <button type="button" class="pager-btn" id="pagerPrev" aria-label="Tờ trước">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="pager-label" id="pagerLabel">Tờ 1/1</span>
+          <button type="button" class="pager-btn" id="pagerNext" aria-label="Tờ sau">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <p class="hint">Cứ viết thoải mái. Hết giấy, một tờ thiệp mới sẽ tự hiện ra để bạn viết tiếp.</p>
+      </section>
+
+      <section class="panel" data-panel="2" aria-label="Ảnh kỷ niệm">
+        <input class="visually-hidden" type="file" id="imageInput" accept="image/png,image/jpeg,image/webp" multiple>
+        <label class="drop-box" for="imageInput" id="dropBox">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+          <span class="drop-main">Chọn ảnh hoặc kéo thả vào đây</span>
+          <span class="drop-sub">JPG, PNG, WebP · mỗi ảnh dưới 5MB · tối đa 6 ảnh (<span id="photoCount">0/6</span>)</span>
+        </label>
+        <ul class="thumbs" id="thumbs"></ul>
+      </section>
+
+      <section class="panel" data-panel="3" aria-label="Đóng dấu">
+        <div class="stamps" role="radiogroup" aria-label="Chọn con dấu">
+          <label class="stamp-opt" data-wax="0">
+            <input type="radio" name="stamp" value="0" checked>
+            <span class="stamp-prev"><svg viewBox="0 0 100 100"><use href="#stamp-0"/></svg></span>
+            <span class="stamp-name">Ngày 20/11</span>
+          </label>
+          <label class="stamp-opt" data-wax="1">
+            <input type="radio" name="stamp" value="1">
+            <span class="stamp-prev"><svg viewBox="0 0 100 100"><use href="#stamp-1"/></svg></span>
+            <span class="stamp-name">Quyển sách</span>
+          </label>
+          <label class="stamp-opt" data-wax="2">
+            <input type="radio" name="stamp" value="2">
+            <span class="stamp-prev"><svg viewBox="0 0 100 100"><use href="#stamp-2"/></svg></span>
+            <span class="stamp-name">Đóa hoa</span>
+          </label>
+          <label class="stamp-opt" data-wax="3">
+            <input type="radio" name="stamp" value="3">
+            <span class="stamp-prev"><svg viewBox="0 0 100 100"><use href="#stamp-3"/></svg></span>
+            <span class="stamp-name">Đèn trời</span>
+          </label>
+        </div>
+
+        <button type="button" class="hold-btn" id="holdBtn">
+          <span class="hold-fill" id="holdFill"></span>
+          <span class="hold-label">
+            <b id="holdTitle">Đóng nến sáp</b>
+            <small id="holdHint">Nhấn giữ 1,5 giây</small>
+          </span>
+        </button>
+      </section>
+    </div>
+
+    <p class="form-error" id="formError" role="alert" hidden></p>
+
+    <div class="actions" id="actions">
+      <button type="button" class="btn-ghost" id="backBtn" hidden>Quay lại</button>
+      <button type="button" class="btn-primary" id="nextBtn"><span>Tiếp tục</span></button>
+    </div>
+  </main>
+
+  <!-- Thông báo gửi xong -->
+  <div class="success" id="successModal" role="dialog" aria-modal="true" aria-labelledby="successTitle" hidden>
+    <div class="success-card">
+      <div class="success-lantern" aria-hidden="true"></div>
+      <h2 id="successTitle">Lời chúc đã được gửi đi</h2>
+      <p>Cảm ơn bạn. Lá thư của bạn đang bay lên cùng muôn ngàn lời tri ân khác.</p>
+      <div class="success-actions">
+        <a class="btn-primary" href="view.html">Xem các lời chúc</a>
+        <button type="button" class="btn-ghost" id="writeAgain">Viết thêm một lá thư</button>
+        <a class="link" href="index.html">Về trang chủ</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/send.js"></script>
+</body>
+</html>
