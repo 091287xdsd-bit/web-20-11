@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F172A" />
+    <meta
+      name="description"
+      content="Đêm Thả Đèn Trời - Những lời tri ân gửi đến Thầy Cô nhân ngày Nhà giáo Việt Nam 20/11." />
+    <title>Đêm Thả Đèn Trời - Tri ân Thầy Cô 20/11</title>
+
+    <!-- Google Fonts (đúng link quy chuẩn trong rule.txt) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="css/view.css" />
+  </head>
+  <body>
+    <!-- Lớp 0: Trời sao + đom đóm (canvas) -->
+    <canvas id="sky-canvas" aria-hidden="true"></canvas>
+
+    <!-- Lớp 1: Mặt nước -->
+    <div class="water" aria-hidden="true"></div>
+
+    <!-- Lớp 2: Đèn trời (JS sinh các nút .lantern vào đây) -->
+    <div id="lantern-field"></div>
+
+    <!-- Lớp 3: Tiêu đề -->
+    <section class="hero">
+      <h1 class="hero-title">Đêm Thả Đèn Trời</h1>
+      <p class="hero-sub">Chúng em xin gửi đến quý Thầy Cô đôi lời tri ân.</p>
+      <p class="hero-hint">Chạm vào một ngọn đèn để đọc lời chúc</p>
+      <p class="hero-count" id="wish-count" aria-live="polite"></p>
+    </section>
+
+    <!-- Thanh điều hướng -->
+    <header class="topbar">
+      <a class="btn" href="index.html" id="btn-home" aria-label="Trang chủ">
+        <i data-lucide="home" aria-hidden="true"></i
+        ><span class="label">Trang chủ</span>
+      </a>
+
+      <form class="code-form" id="code-form" autocomplete="off">
+        <label class="sr-only" for="code-input">Mã Thư</label>
+        <input
+          id="code-input"
+          type="text"
+          placeholder="Nhập Mã Thư…"
+          maxlength="300"
+          spellcheck="false" />
+        <button
+          type="submit"
+          class="btn btn-icon"
+          aria-label="Mở thư theo Mã Thư">
+          <i data-lucide="search" aria-hidden="true"></i>
+        </button>
+      </form>
+
+      <button
+        type="button"
+        class="btn"
+        id="panorama-btn"
+        aria-pressed="false"
+        aria-label="Chế độ Toàn cảnh">
+        <i data-lucide="expand" aria-hidden="true"></i
+        ><span class="label" id="panorama-label">Toàn cảnh</span>
+      </button>
+    </header>
+
+    <!-- Trạng thái tải / rỗng / lỗi -->
+    <p class="status" id="status" role="status">Đang thả đèn…</p>
+
+    <!-- Đọc thư: phong thư + lá thư -->
+    <div class="overlay" id="letter-overlay" hidden aria-hidden="true">
+      <div class="overlay-backdrop" id="letter-backdrop"></div>
+
+      <div
+        class="letter-stage"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="letter-greeting">
+        <!-- is-read = trạng thái đã đọc (phong thư ẩn, lá thư ở giữa). JS bỏ class này khi chạy hiệu ứng mở -->
+        <div class="letter-scene is-read" id="letter-scene">
+          <div class="env-back" id="env-back" aria-hidden="true"></div>
+
+          <!-- paper-wrap: cắt phần lá thư nằm dưới đáy phong thư khi thư còn "nằm trong bao" -->
+          <div class="paper-wrap" id="paper-wrap">
+            <article class="letter-paper" id="letter-paper">
+              <div class="letter-scroll" id="letter-scroll">
+                <p class="letter-greeting" id="letter-greeting">
+                  Kính gửi Quý thầy cô,
+                </p>
+                <p class="letter-message" id="letter-message"></p>
+                <figure class="letter-photo" id="letter-photo" hidden>
+                  <img
+                    id="letter-photo-img"
+                    alt="Ảnh kỷ niệm đính kèm lời chúc"
+                    decoding="async" />
+                </figure>
+                <p class="letter-sign" id="letter-sign"></p>
+                <p class="letter-date" id="letter-date"></p>
+              </div>
+            </article>
+          </div>
+
+          <div class="env-front" id="env-front" aria-hidden="true"></div>
+          <div class="env-flap" id="env-flap" aria-hidden="true"></div>
+          <div class="env-seal" id="env-seal" aria-hidden="true"></div>
+        </div>
+
+        <div class="letter-actions" id="letter-actions">
+          <button type="button" class="btn" id="btn-back">
+            <i data-lucide="arrow-left" aria-hidden="true"></i
+            ><span>Quay lại chọn thư khác</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="btn-light"
+            aria-pressed="false">
+            <i data-lucide="sparkles" aria-hidden="true"></i
+            ><span id="light-label">Thắp Sáng</span>
+            <span class="light-count" id="light-count" hidden>0</span>
+          </button>
+          <button type="button" class="btn" id="btn-copy">
+            <i data-lucide="link" aria-hidden="true"></i
+            ><span>Sao chép liên kết</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Thư viện (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Logic trang (bắt buộc type="module" theo rule.txt) -->
+    <script type="module" src="js/view.js"></script>
+  </body>
+</html>
