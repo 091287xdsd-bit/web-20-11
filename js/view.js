@@ -1,35 +1,32 @@
 /* ==========================================================================
-   view.js - TRANG XEM THƯ "ĐÊM THẢ ĐÈN TRỜI"
-   Cặp 3 (Member 4 + Member 5) | Nhánh: feature/view
+   view.js - TRANG XEM THƯ "TRI ÂN THẦY CÔ 20/11"
+   Nhánh: feature/view
 
-   Cấu trúc file (mỗi khối có đánh dấu để 2 bạn dễ gộp code, tránh conflict):
+   Cấu trúc file:
      [0] Cấu hình Firebase + dữ liệu mẫu
-     [1] Tiện ích
-     [2] ★ MEMBER 5 ★  NightSky  - sao đêm, sao băng, ĐOM ĐÓM (canvas)
-     [3] LanternField            - đèn trời bay lên chậm
-     [4] Đọc thư                 - phong thư mở + lá thư + Thắp Sáng + Toàn cảnh
-     [5] Dữ liệu Firebase        - đọc node "wishes" (đúng 6 trường theo rule)
+     [1] Tiện ích + Yêu thích / độ nổi bật
+     [2] NightSky     - ánh sáng lấp lánh (canvas)
+     [3] LanternField - phong thư xếp thành HÀNG, trôi chậm trái -> phải, không đè nhau
+     [4] Đọc thư      - phong thư mở + lá thư PHÂN TRANG + Yêu thích + Toàn cảnh
+     [5] Dữ liệu Firebase
      [6] Khởi động
    ========================================================================== */
 
 /* ==========================================================================
    [0] CẤU HÌNH
    ========================================================================== */
-
-// Config Firebase lấy từ js/config.js (dùng chung với send.js, đúng theo lệnh-git.txt):
-//   import { firebaseConfig } from "./config.js";
-// Dùng import() động để nếu config.js thiếu/lỗi thì giao diện vẫn chạy bằng DỮ LIỆU MẪU.
-const FIREBASE_SDK_VERSION = "10.8.0";   // cùng phiên bản với code mẫu send.js / view.js trong lệnh-git.txt
+const FIREBASE_SDK_VERSION = "10.8.0";
 const WISHES_NODE = "wishes";
-// Lượt Thắp Sáng lưu ở node RIÊNG "lights/{id} = số" -> node "wishes" vẫn giữ đúng 6 trường theo rule
-const LIGHTS_NODE = "lights";
-const LIKED_KEY = "dtdt-liked-v1";      // localStorage: các thư máy này đã thắp sáng (mỗi máy 1 lượt / thư)
-const TOP_N = 3;                         // số đèn "Top" có quầng sáng đặc biệt
+// Lượt Yêu thích lưu ở node RIÊNG "lights/{id} = số" (node "wishes" vẫn giữ đúng 6 trường theo rule).
+// Giữ nguyên tên node "lights" để không mất dữ liệu cũ + không phải sửa Firebase Rules.
+// Nếu muốn đổi tên thành "likes" thì sửa giá trị bên dưới (và sửa Rules tương ứng).
+const LIKES_NODE = "lights";
+const LIKED_KEY = "dtdt-liked-v1";      // localStorage: các thư máy này đã yêu thích (mỗi máy 1 lượt / thư)
+const TOP_N = 3;                         // số thư "Top" có quầng sáng rất nhẹ
 
-// Dữ liệu mẫu - đúng 6 trường theo rule.txt. Dùng khi chưa có config hoặc mở ?demo=1
 const DEMO_WISHES = [
   { id: "demo-1", sender: "Lớp 12A1", isAnonymous: false, imageUrl: "", timestamp: 1763100000000,
-    message: "Chúng em kính chúc Thầy Cô luôn mạnh khỏe, hạnh phúc và tràn đầy niềm vui.\nCảm ơn Thầy Cô đã kiên nhẫn dìu dắt chúng em suốt những năm tháng qua. Mỗi bài giảng của Thầy Cô là một hành trang quý giá." },
+    message: "Chúng em kính chúc Thầy Cô luôn mạnh khỏe, hạnh phúc và tràn đầy niềm vui.\nCảm ơn Thầy Cô đã kiên nhẫn dìu dắt chúng em suốt những năm tháng qua. Mỗi bài giảng của Thầy Cô là một hành trang quý giá.\n\nCó những buổi chiều Thầy Cô ở lại thật muộn để giảng lại cho chúng em từng bài khó, có những lần Thầy Cô lặng lẽ động viên khi chúng em chán nản. Những điều nhỏ bé ấy, chúng em chưa bao giờ quên.\n\nNăm tháng rồi sẽ trôi qua, chúng em sẽ lớn lên và đi xa, nhưng hình ảnh Thầy Cô bên bục giảng sẽ mãi nằm trong trái tim mỗi người. Chúng em biết ơn Thầy Cô rất nhiều, và hứa sẽ cố gắng trở thành những người có ích để không phụ công ơn dạy dỗ.\n\nChúc quý Thầy Cô ngày 20/11 thật ý nghĩa, luôn tràn đầy sức khỏe và niềm vui trong nghề cao quý này!" },
   { id: "demo-2", sender: "", isAnonymous: true, imageUrl: "", timestamp: 1763100100000,
     message: "Em cảm ơn cô đã không bỏ rơi em những lúc em chán nản nhất. Chúc cô 20/11 thật nhiều hoa và nụ cười ạ!" },
   { id: "demo-3", sender: "Nguyễn Minh Anh", isAnonymous: false, imageUrl: "", timestamp: 1763100200000,
@@ -59,22 +56,11 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const rand = (min, max) => min + Math.random() * (max - min);
 const isMobile = () => window.innerWidth < 640;
 
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-// Nội hoà góc theo đường ngắn nhất
 function lerpAngle(a, b, t) {
   const d = ((b - a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
   return a + d * t;
 }
 
-// Tên hiển thị: tôn trọng isAnonymous
 function displayName(w) {
   if (w.isAnonymous) return "Ẩn danh";
   const s = (w.sender || "").trim();
@@ -92,9 +78,9 @@ function showToast(text) {
 
 function setStatus(text) { $("#status").textContent = text || ""; }
 
-/* ---------- Lượt Thắp Sáng + độ nổi bật ---------- */
-const lightCounts = new Map();           // id -> tổng lượt thắp sáng (Firebase hoặc demo)
-let pushLight = null;                    // hàm ghi +1 lên Firebase (gán khi đã kết nối)
+/* ---------- Lượt Yêu thích + độ nổi bật ---------- */
+const likeCounts = new Map();            // id -> tổng lượt yêu thích
+let pushLike = null;                     // hàm ghi +1 lên Firebase (gán khi đã kết nối)
 
 const likedSet = (() => {
   try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || "[]")); }
@@ -106,34 +92,32 @@ function saveLiked() {
   try { localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(likedSet))); } catch (e) { /* bỏ qua */ }
 }
 
-// heat: 0..1 theo thang log (đèn 40 lượt nổi hơn đèn 4 lượt, nhưng đèn 4 lượt vẫn khác đèn 0 lượt)
+// heat: 0..1 theo thang log. Nhân thêm "độ tin cậy" để khi cả hội mới có 1-2 lượt thì chưa nổi bật hẳn lên.
 const popularity = {
   max: 0,
-  top: new Map(),                        // id -> hạng 1..TOP_N
+  top: new Map(),
   recompute(wishes) {
     const ranked = wishes
-      .map((w) => ({ id: w.id, c: lightCounts.get(w.id) || 0 }))
+      .map((w) => ({ id: w.id, c: likeCounts.get(w.id) || 0 }))
       .filter((x) => x.c > 0)
       .sort((a, b) => b.c - a.c);
     this.max = ranked.length ? ranked[0].c : 0;
     this.top = new Map();
     ranked.slice(0, TOP_N).forEach((x, i) => this.top.set(x.id, i + 1));
   },
-  count(id) { return lightCounts.get(id) || 0; },
+  count(id) { return likeCounts.get(id) || 0; },
   heat(id) {
     const c = this.count(id);
-    return c && this.max ? Math.log1p(c) / Math.log1p(this.max) : 0;
+    if (!c || !this.max) return 0;
+    const confidence = Math.min(1, this.max / 6);
+    return (Math.log1p(c) / Math.log1p(this.max)) * confidence;
   },
   rank(id) { return this.top.get(id) || 0; }
 };
 
 /* ==========================================================================
-   [2] ★ MEMBER 5 ★  NightSky - SAO ĐÊM + SAO BĂNG + ĐOM ĐÓM
-   Canvas 2D thuần (không cần thư viện), tối ưu cho mobile:
-   - Glow đom đóm vẽ từ 1 sprite dựng sẵn (drawImage) thay vì tạo gradient mỗi frame
-   - Giới hạn devicePixelRatio <= 2, giới hạn tổng số đom đóm
-   - Tự giảm số lượng trên màn hình nhỏ; giảm chuyển động nếu người dùng bật reduced-motion
-   API dùng bên ngoài:  sky.update(dt) | sky.draw() | sky.resize() | sky.burst(x, y, n)
+   [2] NightSky - ánh sáng lấp lánh (canvas 2D thuần)
+   API: sky.update(dt) | sky.draw() | sky.resize() | sky.burst(x, y, n)
    ========================================================================== */
 class NightSky {
   constructor(canvas, reduced) {
@@ -145,8 +129,8 @@ class NightSky {
     this.dpr = 1;
     this.time = 0;
 
-    this.stars = [];          // toạ độ chuẩn hoá 0..1 nên không phải dựng lại khi resize
-    this.flies = [];          // đom đóm (ambient + extra do "Thắp Sáng")
+    this.stars = [];
+    this.flies = [];
     this.shooting = null;
     this.nextShoot = rand(4, 9);
 
@@ -160,9 +144,9 @@ class NightSky {
     c.width = c.height = s;
     const g = c.getContext("2d");
     const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    gr.addColorStop(0, "rgba(253,230,138,1)");      // #FDE68A
+    gr.addColorStop(0, "rgba(253,230,138,1)");
     gr.addColorStop(0.25, "rgba(253,230,138,0.55)");
-    gr.addColorStop(0.6, "rgba(245,158,11,0.14)");  // #F59E0B
+    gr.addColorStop(0.6, "rgba(245,158,11,0.14)");
     gr.addColorStop(1, "rgba(245,158,11,0)");
     g.fillStyle = gr;
     g.fillRect(0, 0, s, s);
@@ -174,7 +158,6 @@ class NightSky {
     return isMobile() ? 18 : 34;
   }
   get maxFlies() { return isMobile() ? 90 : 160; }
-  get extraCount() { return this.flies.filter((f) => f.extra).length; }
 
   resize() {
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -184,12 +167,11 @@ class NightSky {
     this.canvas.height = Math.round(this.h * this.dpr);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    // Sao: số lượng theo diện tích
     const want = clamp(Math.round((this.w * this.h) / 4500), 60, 520);
     while (this.stars.length < want) {
       this.stars.push({
         x: Math.random(),
-        y: Math.random() * 0.88,                 // không vẽ sao xuống phần mặt nước
+        y: Math.random() * 0.88,
         r: Math.random() < 0.12 ? rand(1.6, 2.2) : rand(0.6, 1.3),
         a: rand(0.35, 0.95),
         sp: rand(0.6, 2.2),
@@ -198,7 +180,6 @@ class NightSky {
     }
     this.stars.length = want;
 
-    // Đom đóm ambient
     let ambient = this.flies.filter((f) => !f.extra);
     while (ambient.length < this.ambientTarget) {
       const f = this.spawnFly(rand(0, this.w), rand(this.h * 0.3, this.h * 0.95), false, null);
@@ -214,12 +195,12 @@ class NightSky {
   spawnFly(x, y, extra, home) {
     return {
       x, y,
-      a: Math.random() * Math.PI * 2,           // hướng bay
-      turn: rand(-0.6, 0.6),                    // tốc độ đổi hướng (tạo đường bay lượn)
-      sp: rand(8, 22),                          // px / giây
-      size: rand(10, 24),                       // kích thước quầng sáng
+      a: Math.random() * Math.PI * 2,
+      turn: rand(-0.6, 0.6),
+      sp: rand(8, 22),
+      size: rand(10, 24),
       ph: Math.random() * Math.PI * 2,
-      pf: rand(0.8, 2.2),                       // tần số nhấp nháy
+      pf: rand(0.8, 2.2),
       extra,
       home,
       born: this.time,
@@ -227,7 +208,6 @@ class NightSky {
     };
   }
 
-  // "Thắp Sáng": thêm đom đóm quanh một điểm (ngọn đèn)
   burst(x, y, n = 6) {
     for (let i = 0; i < n; i++) {
       const ang = Math.random() * Math.PI * 2;
@@ -237,7 +217,6 @@ class NightSky {
       f.pf *= 1.25;
       this.flies.push(f);
     }
-    // Vượt trần -> bỏ bớt đom đóm "extra" cũ nhất
     while (this.flies.length > this.maxFlies) {
       const idx = this.flies.findIndex((f) => f.extra);
       if (idx < 0) break;
@@ -249,7 +228,6 @@ class NightSky {
     this.time += dt;
     const k = this.reduced ? 0.35 : 1;
 
-    // Đom đóm
     for (let i = this.flies.length - 1; i >= 0; i--) {
       const f = this.flies[i];
       const age = this.time - f.born;
@@ -258,7 +236,6 @@ class NightSky {
       f.turn = clamp(f.turn + (Math.random() - 0.5) * dt * 3, -1.2, 1.2);
       f.a += f.turn * dt;
 
-      // Đom đóm "extra" lởn vởn quanh ngọn đèn trong ~14 giây đầu
       if (f.home && age < 14) {
         const dx = f.home.x - f.x, dy = f.home.y - f.y;
         if (Math.hypot(dx, dy) > 70) {
@@ -269,7 +246,6 @@ class NightSky {
       f.x += Math.cos(f.a) * f.sp * k * dt;
       f.y += Math.sin(f.a) * f.sp * k * dt;
 
-      // Cuộn ngang qua mép; đẩy nhẹ lại nếu bay quá cao hoặc chìm xuống nước
       if (f.x < -30) f.x = this.w + 30;
       else if (f.x > this.w + 30) f.x = -30;
       const top = this.h * 0.22, bottom = this.h * 0.97;
@@ -277,7 +253,6 @@ class NightSky {
       else if (f.y > bottom) f.y -= (f.y - bottom) * Math.min(1, dt * 2);
     }
 
-    // Sao băng thỉnh thoảng
     if (!this.reduced) {
       this.nextShoot -= dt;
       if (this.nextShoot <= 0 && !this.shooting) {
@@ -309,7 +284,6 @@ class NightSky {
     ctx.clearRect(0, 0, this.w, this.h);
     ctx.globalCompositeOperation = "source-over";
 
-    // Sao nhấp nháy
     ctx.fillStyle = "#F8FAFC";
     for (let i = 0; i < this.stars.length; i++) {
       const s = this.stars[i];
@@ -318,7 +292,6 @@ class NightSky {
       ctx.fillRect(s.x * this.w, s.y * this.h, s.r, s.r);
     }
 
-    // Sao băng
     if (this.shooting) {
       const s = this.shooting;
       const fade = 1 - s.life / s.max;
@@ -338,20 +311,18 @@ class NightSky {
       ctx.stroke();
     }
 
-    // Đom đóm (cộng sáng)
     ctx.globalCompositeOperation = "lighter";
     for (let i = 0; i < this.flies.length; i++) {
       const f = this.flies[i];
       const pulse = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(this.time * f.pf + f.ph));
       let alpha = pulse;
-      if (f.extra) {                                   // mờ dần 5 giây cuối đời
+      if (f.extra) {
         const left = f.ttl - (this.time - f.born);
         if (left < 5) alpha *= clamp(left / 5, 0, 1);
       }
       ctx.globalAlpha = alpha;
       const s = f.size;
       ctx.drawImage(this.glow, f.x - s / 2, f.y - s / 2, s, s);
-      // lõi sáng nhỏ ở giữa cho "đúng chất" đom đóm
       ctx.globalAlpha = Math.min(1, alpha + 0.15);
       ctx.fillStyle = "#FDE68A";
       ctx.fillRect(f.x - 0.8, f.y - 0.8, 1.6, 1.6);
@@ -362,9 +333,12 @@ class NightSky {
 }
 
 /* ==========================================================================
-   [3] LanternField - ĐÈN TRỜI MANG LỜI CHÚC BAY LÊN CHẬM
-   - Mỗi ngọn đèn gắn với 1 lời chúc ngẫu nhiên; bay hết màn hình sẽ nhận lời chúc mới
-   - Rê chuột vào đèn: đèn chậm lại để dễ bấm
+   [3] LanternField - PHONG THƯ XẾP THÀNH HÀNG, TRÔI CHẬM TRÁI -> PHẢI
+   - Mỗi hàng (lane) có khoảng cách cố định giữa các thư và cùng 1 tốc độ
+     => các thư KHÔNG BAO GIỜ đè lên nhau; các hàng cách nhau theo chiều dọc.
+   - Thư trôi ra mép phải sẽ quay lại mép trái và nhận lời chúc mới.
+   - Rê chuột vào 1 thư: cả hàng đó chậm lại để dễ bấm.
+   - Thư được yêu thích nhiều chỉ to hơn tối đa ~9% và có quầng sáng rất nhẹ.
    ========================================================================== */
 class LanternField {
   constructor(container, { reduced, onSelect }) {
@@ -372,9 +346,11 @@ class LanternField {
     this.reduced = reduced;
     this.onSelect = onSelect;
     this.items = [];
+    this.lanes = [];
     this.wishes = [];
     this.queue = [];
-    this.scaleMul = 1;
+    this.sm = 1;
+    this.grow = 0.09;
     this.paused = false;
 
     this.container.addEventListener("click", (e) => {
@@ -388,15 +364,14 @@ class LanternField {
     this.queue = [];
   }
 
-  // Xáo trộn có trọng số (Efraimidis–Spirakis): thư nhiều lượt thắp sáng xuất hiện thường xuyên hơn
+  // Xáo trộn có trọng số: thư nhiều lượt yêu thích xuất hiện thường xuyên hơn một chút
   refillQueue() {
     this.queue = this.wishes
-      .map((w) => ({ w, k: Math.pow(Math.random(), 1 / (1 + 4 * popularity.heat(w.id))) }))
-      .sort((a, b) => a.k - b.k)           // pop() lấy từ cuối -> k lớn nhất ra trước
+      .map((w) => ({ w, k: Math.pow(Math.random(), 1 / (1 + 2 * popularity.heat(w.id))) }))
+      .sort((a, b) => a.k - b.k)
       .map((x) => x.w);
   }
 
-  // Lấy thư tiếp theo, tránh trùng với thư đang bay trên màn hình (nếu còn thư khác)
   nextWish(self) {
     if (!this.wishes.length) return null;
     const onScreen = new Set();
@@ -410,68 +385,106 @@ class LanternField {
     return this.wishes[0];
   }
 
-  rebuild(count, scaleMul) {
-    this.scaleMul = scaleMul;
+  makeEl() {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "lantern";
+
+    const halo = document.createElement("span");
+    halo.className = "lantern-halo";
+    const body = document.createElement("span");
+    body.className = "lantern-body";
+    const flame = document.createElement("span");
+    flame.className = "lantern-flame";
+    body.appendChild(flame);
+    const name = document.createElement("span");
+    name.className = "lantern-name";
+    const likes = document.createElement("span");
+    likes.className = "lantern-likes";
+    likes.hidden = true;
+    el.appendChild(halo);
+    el.appendChild(body);
+    el.appendChild(name);
+    el.appendChild(likes);
+    return { el, nameEl: name, likesEl: likes };
+  }
+
+  rebuild(panorama) {
     this.container.textContent = "";
     this.items = [];
+    this.lanes = [];
     if (!this.wishes.length) { this.queue = []; return; }
 
-    // Đèn Top luôn được thả trước để chắc chắn có mặt trên bầu trời
+    const w = window.innerWidth, h = window.innerHeight;
+    const sm = panorama ? 0.62 : 1;
+    this.sm = sm;
+    this.grow = w < 640 ? 0.07 : 0.09;
+
+    // --- Vùng chứa các hàng: dưới tiêu đề, trên 2 họa tiết góc dưới ---
+    const miniW = clamp(w * 0.12, 104, 184);
+    const bodyH = miniW * 2 / 3;
+    const hero = $(".hero");
+    const safeTop = 70;
+    const top = panorama || !hero ? safeTop : Math.max(safeTop, hero.offsetTop + hero.offsetHeight + 10);
+    const bottom = h - 56;
+    const areaH = Math.max(120, bottom - top);
+
+    const itemH = (bodyH + 54) * sm;                 // thân phong thư + tên + số tim
+    const pitch = itemH * 1.18 + 10;
+    const laneCount = clamp(Math.floor(areaH / pitch), 1, 7);
+    const spacing = areaH / laneCount;
+
+    // --- Khoảng cách ngang giữa các thư trong 1 hàng ---
+    const minSlot = Math.max(miniW * 1.32, 136) * sm * 1.12;
+    const perLaneCap = Math.max(3, Math.ceil((w + 2 * minSlot) / minSlot));
+    const perLane = clamp(Math.ceil(this.wishes.length / laneCount), 3, perLaneCap);
+    const L = w + 2 * minSlot;                        // chu vi vòng lặp của 1 hàng
+    const slot = L / perLane;
+
+    // Thư được yêu thích nhiều nhất luôn được thả sớm để chắc chắn có mặt
     this.refillQueue();
     const tops = Array.from(popularity.top.keys())
-      .map((id) => this.wishes.find((w) => w.id === id))
+      .map((id) => this.wishes.find((x) => x.id === id))
       .filter(Boolean);
-    this.queue = this.queue.filter((w) => !popularity.top.has(w.id)).concat(tops.reverse());
+    this.queue = this.queue.filter((x) => !popularity.top.has(x.id)).concat(tops.reverse());
 
-    const h = window.innerHeight;
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement("button");
-      el.type = "button";
-      el.className = "lantern";
-      el.style.setProperty("--delay", (-Math.random() * 2).toFixed(2) + "s");
-
-      const halo = document.createElement("span");
-      halo.className = "lantern-halo";
-      const body = document.createElement("span");
-      body.className = "lantern-body";
-      const flame = document.createElement("span");
-      flame.className = "lantern-flame";
-      body.appendChild(flame);
-      const name = document.createElement("span");
-      name.className = "lantern-name";
-      const likes = document.createElement("span");
-      likes.className = "lantern-likes";
-      likes.hidden = true;
-      el.appendChild(halo);
-      el.appendChild(body);
-      el.appendChild(name);
-      el.appendChild(likes);
-
-      const depth = Math.random();                       // 0 xa -> 1 gần
-      const item = {
-        el, nameEl: name, likesEl: likes, wish: null,
-        depth,
-        fx: rand(0.06, 0.94),
-        y: rand(-0.05 * h, h * 0.95),                    // rải khắp bầu trời lúc đầu
-        scale: 0.72 + depth * 0.43,
-        speed: (this.reduced ? rand(4, 8) : rand(10, 26)) * (0.65 + depth * 0.6),
-        amp: rand(8, 26),
-        freq: rand(0.25, 0.6),
-        phase: Math.random() * Math.PI * 2,
-        t: Math.random() * 100,
+    for (let li = 0; li < laneCount; li++) {
+      const lane = {
+        y: top + li * spacing + Math.max(0, (spacing - itemH) / 2),
+        speed: (this.reduced ? rand(5, 8) : rand(16, 26)),   // px / giây, trái -> phải
         k: 1,
-        heat: 0,                                         // độ nổi bật mục tiêu 0..1
-        hs: 0,                                           // độ nổi bật đang hiển thị (nội suy mượt)
-        hover: false
+        hover: false,
+        L,
+        right: w + minSlot,
+        items: []
       };
-      el.__item = item;
-      el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") item.hover = true; });
-      el.addEventListener("pointerleave", () => { item.hover = false; });
+      const off = (li % 2) * slot * 0.5 + rand(0, slot * 0.25);  // so le giữa các hàng như ảnh mẫu
 
-      this.assign(item);
-      item.hs = item.heat;                               // lúc đầu hiện đúng kích thước luôn
-      this.container.appendChild(el);
-      this.items.push(item);
+      for (let j = 0; j < perLane; j++) {
+        const parts = this.makeEl();
+        const item = {
+          el: parts.el, nameEl: parts.nameEl, likesEl: parts.likesEl,
+          wish: null, lane,
+          x: -minSlot + off + j * slot,
+          s0: rand(0.96, 1.04),
+          bobAmp: rand(2, 5),
+          bobFreq: rand(0.3, 0.6),
+          ph: Math.random() * Math.PI * 2,
+          t: Math.random() * 100,
+          heat: 0,
+          hs: 0
+        };
+        parts.el.__item = item;
+        parts.el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") lane.hover = true; });
+        parts.el.addEventListener("pointerleave", () => { lane.hover = false; });
+
+        this.assign(item);
+        item.hs = item.heat;
+        this.container.appendChild(parts.el);
+        this.items.push(item);
+        lane.items.push(item);
+      }
+      this.lanes.push(lane);
     }
     this.update(0, true);
   }
@@ -484,7 +497,6 @@ class LanternField {
     this.applyPopularity(item);
   }
 
-  // Cập nhật số lượt + độ nổi bật cho 1 ngọn đèn
   applyPopularity(item) {
     if (!item.wish) return;
     const id = item.wish.id;
@@ -493,17 +505,16 @@ class LanternField {
     const rank = popularity.rank(id);
     item.heat = heat;
 
-    item.el.style.setProperty("--glow", (heat * 12).toFixed(2));
-    item.el.style.zIndex = String(Math.round(item.depth * 10) + Math.round(heat * 20) + (rank ? 40 - rank : 0));
-    item.el.classList.toggle("is-top", rank > 0);
-    item.el.classList.toggle("rank-1", rank === 1);
+    item.el.style.setProperty("--glow", (heat * 6).toFixed(2));
+    item.el.style.zIndex = String(5 + Math.round(heat * 10) + (rank ? 5 - rank : 0));
+    item.el.classList.toggle("is-top", rank > 0 && heat > 0.25);
 
     item.likesEl.hidden = n === 0;
-    item.likesEl.textContent = (rank ? "★ " : "✦ ") + n;
+    item.likesEl.textContent = "♥ " + n;
 
     const name = displayName(item.wish);
     item.el.setAttribute("aria-label",
-      "Mở lời chúc của " + name + (n ? " - " + n + " lượt thắp sáng" : ""));
+      "Mở lời chúc của " + name + (n ? " - " + n + " lượt yêu thích" : ""));
   }
 
   refreshPopularity() {
@@ -512,60 +523,35 @@ class LanternField {
 
   update(dt, force) {
     if (this.paused && !force) return;
-    const w = window.innerWidth, h = window.innerHeight;
-    const sm = this.scaleMul;
+    const sm = this.sm;
 
-    for (let i = 0; i < this.items.length; i++) {
-      const it = this.items[i];
-      it.k += ((it.hover ? 0 : 1) - it.k) * Math.min(1, dt * 6);
-      it.hs += (it.heat - it.hs) * Math.min(1, dt * 2.5);
-      it.t += dt * it.k;
-      // Đèn càng nổi bật càng bay chậm -> ở lại trên trời lâu hơn
-      it.y -= it.speed * (1 - 0.35 * it.hs) * it.k * dt;
+    for (let li = 0; li < this.lanes.length; li++) {
+      const lane = this.lanes[li];
+      lane.k += ((lane.hover ? 0.08 : 1) - lane.k) * Math.min(1, dt * 5);
+      const dx = lane.speed * lane.k * dt;
 
-      if (it.y < -190) {                                  // bay khỏi màn hình -> thả ngọn mới từ mặt nước
-        it.y = h * 0.9 + rand(0, h * 0.12);
-        it.fx = rand(0.06, 0.94);
-        this.assign(it);
+      for (let i = 0; i < lane.items.length; i++) {
+        const it = lane.items[i];
+        it.x += dx;
+        it.t += dt * lane.k;
+        if (it.x > lane.right) {                      // trôi khỏi mép phải -> quay lại mép trái với lời chúc mới
+          it.x -= lane.L;
+          this.assign(it);
+        }
+        it.hs += (it.heat - it.hs) * Math.min(1, dt * 2.5);
+
+        const y = lane.y + Math.sin(it.t * it.bobFreq + it.ph) * it.bobAmp;
+        const scale = sm * it.s0 * (1 + this.grow * it.hs);
+        it.el.style.transform =
+          "translate3d(" + (it.x - 48).toFixed(1) + "px," + y.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
       }
-
-      const x = it.fx * w + Math.sin(it.t * it.freq + it.phase) * it.amp;
-      const fadeTop = clamp((it.y + 140) / 160, 0, 1);
-      const fadeBottom = clamp((h * 1.0 - it.y) / (h * 0.1), 0, 1);
-      const grow = w < 640 ? 0.35 : 0.5;                 // đèn nhiều lượt thích to hơn tới 50% (mobile 35%)
-      const scale = it.scale * sm * (1 + grow * it.hs);
-
-      it.el.style.opacity = Math.min(fadeTop, fadeBottom).toFixed(2);
-      it.el.style.transform =
-        "translate3d(" + (x - 48).toFixed(1) + "px," + it.y.toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
     }
   }
 }
 
 /* ==========================================================================
-   [4] ĐỌC THƯ + THẮP SÁNG + TOÀN CẢNH
+   [4] ĐỌC THƯ + PHÂN TRANG + YÊU THÍCH + TOÀN CẢNH
    ========================================================================== */
-// Bảo đảm có đủ phần tử mà hiệu ứng mới cần, kể cả khi view.html còn là bản cũ
-(function ensureLetterDom() {
-  const paper = $("#letter-paper");
-  if (paper && !$("#paper-wrap")) {
-    const wrap = document.createElement("div");
-    wrap.className = "paper-wrap";
-    wrap.id = "paper-wrap";
-    paper.parentNode.insertBefore(wrap, paper);
-    wrap.appendChild(paper);
-  }
-  const scene = $("#letter-scene");
-  if (scene && !scene.classList.contains("is-read")) scene.classList.add("is-read");
-  const flap = $("#env-flap");
-  if (flap) flap.classList.remove("is-open");
-  const btn = $("#btn-light");
-  if (btn && !$("#light-label")) {
-    const span = Array.prototype.find.call(btn.children, (c) => c.tagName === "SPAN" && !c.classList.contains("light-count"));
-    if (span) span.id = "light-label";
-  }
-})();
-
 const els = {
   overlay: $("#letter-overlay"),
   backdrop: $("#letter-backdrop"),
@@ -573,7 +559,13 @@ const els = {
   scene: $("#letter-scene"),
   wrap: $("#paper-wrap"),
   paper: $("#letter-paper"),
-  scroll: $("#letter-scroll"),
+  viewport: $("#letter-viewport"),
+  pages: $("#letter-pages"),
+  pager: $("#letter-pager"),
+  pagePrev: $("#page-prev"),
+  pageNext: $("#page-next"),
+  pageInfo: $("#page-info"),
+  pagerDots: $("#pager-dots"),
   envBack: $("#env-back"),
   envFront: $("#env-front"),
   flap: $("#env-flap"),
@@ -581,13 +573,12 @@ const els = {
   actions: $("#letter-actions"),
   message: $("#letter-message"),
   photo: $("#letter-photo"),
-  photoImg: $("#letter-photo-img"),
   sign: $("#letter-sign"),
   date: $("#letter-date"),
   btnBack: $("#btn-back"),
-  btnLight: $("#btn-light"),
-  lightLabel: $("#light-label"),
-  lightCount: $("#light-count"),
+  btnLike: $("#btn-like"),
+  likeLabel: $("#like-label"),
+  likeCount: $("#like-count"),
   btnCopy: $("#btn-copy"),
   panoramaBtn: $("#panorama-btn"),
   panoramaLabel: $("#panorama-label"),
@@ -600,6 +591,7 @@ const state = {
   wishes: [],
   panorama: false,
   deepLinkHandled: false,
+  needRebuild: false,
   letter: "closed",          // closed | opening | open | closing
   current: null,             // { wish, item }
   tl: null,
@@ -612,15 +604,9 @@ const field = new LanternField($("#lantern-field"), {
   onSelect: (wish, item) => openLetter(wish, item)
 });
 
-function targetLanternCount() {
-  const n = state.wishes.length;
-  if (!n) return 0;
-  const mobile = isMobile();
-  if (state.panorama) return Math.min(mobile ? 34 : 80, Math.max(30, n));
-  return Math.min(mobile ? 10 : 20, Math.max(6, n));
-}
 function rebuildField() {
-  field.rebuild(targetLanternCount(), state.panorama ? 0.62 : 1);
+  state.needRebuild = false;
+  field.rebuild(state.panorama);
 }
 
 function wishLink(id) {
@@ -635,6 +621,94 @@ function setUrlId(id) {
 
 function isHttpUrl(u) { return typeof u === "string" && /^https?:\/\//i.test(u); }
 
+/* ---------- Phân trang lá thư ----------
+   Nội dung chảy theo các CỘT NGANG cao bằng khung thư (CSS multi-column).
+   Mỗi cột là 1 trang; chuyển trang = trượt ngang kèm hiệu ứng mờ (CSS). */
+const pager = { page: 0, pages: 1, gap: 40, stride: 0, dotsFor: 0 };
+
+function layoutPages() {
+  if (els.overlay.hidden) return;
+  const vw = els.viewport.clientWidth;
+  const vh = els.viewport.clientHeight;
+  if (!vw || !vh) return;
+
+  const inner = els.pages;
+  inner.style.width = vw + "px";
+  inner.style.height = vh + "px";
+  inner.style.columnWidth = vw + "px";
+  inner.style.columnGap = pager.gap + "px";
+
+  pager.stride = vw + pager.gap;
+  pager.pages = Math.max(1, Math.round((inner.scrollWidth + pager.gap) / pager.stride));
+  pager.page = clamp(pager.page, 0, pager.pages - 1);
+  applyPage(false);
+}
+
+let layoutRaf = 0;
+function scheduleLayout() {
+  cancelAnimationFrame(layoutRaf);
+  layoutRaf = requestAnimationFrame(layoutPages);
+}
+
+function applyPage(animate) {
+  const inner = els.pages;
+  inner.classList.toggle("no-anim", !animate || reducedMotion);
+  inner.style.transform = "translate3d(" + (-pager.page * pager.stride) + "px,0,0)";
+  if (animate && !reducedMotion) {
+    inner.classList.remove("is-turning");
+    void inner.offsetWidth;
+    inner.classList.add("is-turning");
+  }
+  updatePager();
+}
+
+function updatePager() {
+  const multi = pager.pages > 1;
+  els.pager.classList.toggle("is-single", !multi);
+  els.pageInfo.textContent = (pager.page + 1) + " / " + pager.pages;
+  els.pagePrev.disabled = pager.page <= 0;
+  els.pageNext.disabled = pager.page >= pager.pages - 1;
+
+  const showDots = multi && pager.pages <= 8;
+  if (pager.dotsFor !== (showDots ? pager.pages : 0)) {
+    els.pagerDots.textContent = "";
+    if (showDots) {
+      for (let i = 0; i < pager.pages; i++) {
+        const d = document.createElement("span");
+        d.className = "pager-dot";
+        els.pagerDots.appendChild(d);
+      }
+    }
+    pager.dotsFor = showDots ? pager.pages : 0;
+  }
+  Array.prototype.forEach.call(els.pagerDots.children, (d, i) => d.classList.toggle("is-active", i === pager.page));
+}
+
+function goPage(delta) {
+  const n = clamp(pager.page + delta, 0, pager.pages - 1);
+  if (n === pager.page) return;
+  pager.page = n;
+  applyPage(true);
+}
+
+if (window.ResizeObserver) new ResizeObserver(scheduleLayout).observe(els.viewport);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleLayout);
+
+let touchX = 0, touchY = 0;
+els.viewport.addEventListener("touchstart", (e) => {
+  const t = e.changedTouches[0];
+  touchX = t.clientX; touchY = t.clientY;
+}, { passive: true });
+els.viewport.addEventListener("touchend", (e) => {
+  if (state.letter !== "open") return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchX, dy = t.clientY - touchY;
+  if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) goPage(dx < 0 ? 1 : -1);
+}, { passive: true });
+els.pagePrev.addEventListener("click", () => goPage(-1));
+els.pageNext.addEventListener("click", () => goPage(1));
+
+/* ---------- Nội dung thư ---------- */
 function fillLetter(w) {
   els.message.textContent = w.message;                       // textContent: chống chèn HTML/XSS
   els.sign.textContent = "- " + displayName(w);
@@ -642,27 +716,45 @@ function fillLetter(w) {
     ? new Date(w.timestamp).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "";
 
-  if (isHttpUrl(w.imageUrl)) {
+  els.photo.textContent = "";
+  const urls = (w.imageUrl || "").split(",").map((s) => s.trim()).filter(isHttpUrl);
+  if (urls.length) {
     els.photo.hidden = false;
-    els.photoImg.onerror = () => { els.photo.hidden = true; };
-    els.photoImg.src = w.imageUrl;
+    urls.forEach((url) => {
+      const frame = document.createElement("span");
+      frame.className = "photo-frame";
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Ảnh kỷ niệm đính kèm lời chúc";
+      img.decoding = "async";
+      img.onload = scheduleLayout;                           // ảnh tải xong -> tính lại số trang
+      img.onerror = () => {
+        frame.remove();
+        if (!els.photo.children.length) els.photo.hidden = true;
+        scheduleLayout();
+      };
+      frame.appendChild(img);
+      els.photo.appendChild(frame);
+    });
   } else {
     els.photo.hidden = true;
-    els.photoImg.removeAttribute("src");
+    els.photo.textContent = "";
   }
-  els.scroll.scrollTop = 0;
-  updateLightButton();
+
+  pager.page = 0;
+  updateLikeButton();
+  layoutPages();
 }
 
-function updateLightButton() {
+function updateLikeButton() {
   const id = state.current ? state.current.wish.id : null;
   const n = id ? popularity.count(id) : 0;
   const liked = id ? likedSet.has(id) : false;
-  els.lightCount.textContent = String(n);
-  els.lightCount.hidden = n === 0;
-  if (els.lightLabel) els.lightLabel.textContent = liked ? "Đã thắp sáng" : "Thắp Sáng";
-  els.btnLight.classList.toggle("is-lit", liked);
-  els.btnLight.setAttribute("aria-pressed", liked ? "true" : "false");
+  els.likeCount.textContent = String(n);
+  els.likeCount.hidden = n === 0;
+  if (els.likeLabel) els.likeLabel.textContent = liked ? "Đã yêu thích" : "Yêu thích";
+  els.btnLike.classList.toggle("is-lit", liked);
+  els.btnLike.setAttribute("aria-pressed", liked ? "true" : "false");
 }
 
 function lanternCenter(item) {
@@ -673,17 +765,16 @@ function lanternCenter(item) {
   return { x: window.innerWidth / 2, y: window.innerHeight * 0.4 };
 }
 
-const ENV_PARTS = () => [els.envBack, els.envFront, els.flap, els.seal];
 const ANIM_TARGETS = () => [els.backdrop, els.scene, els.wrap, els.paper, els.actions,
   els.envBack, els.envFront, els.flap, els.seal];
 
 /* Hiệu ứng mở thư (≈3,3 giây, bấm vào lá thư để bỏ qua):
-   1. Phong thư bay ra từ ngọn đèn vừa bấm, xoay nhẹ rồi dừng giữa màn hình
+   1. Phong thư bay ra từ vị trí vừa bấm, dừng giữa màn hình
    2. Con dấu sáp phồng lên rồi vỡ
    3. Nắp phong thư lật mở
-   4. Lá thư được rút lên khỏi phong thư, phong thư hạ thấp xuống
-   5. Phong thư được đẩy sang bên trái và mờ dần; lá thư hạ về giữa, mở rộng ra
-   Nội dung thư hiện dần từng dòng ngay khi đang rút thư; cuối cùng là các nút */
+   4. Lá thư được rút lên khỏi phong thư
+   5. Phong thư trượt sang trái và mờ dần; lá thư hạ về giữa
+   Nội dung hiện dần từng dòng, cuối cùng là các nút */
 function openLetter(wish, item) {
   if (state.letter !== "closed") return;
   try {
@@ -708,36 +799,32 @@ function openLetterAnimated(wish, item) {
   state.lastFocus = document.activeElement;
   field.paused = true;
 
+  els.overlay.hidden = false;                  // hiện trước để đo kích thước chia trang
+  els.overlay.setAttribute("aria-hidden", "false");
   fillLetter(wish);
   setUrlId(wish.id);
 
-  els.overlay.hidden = false;
-  els.overlay.setAttribute("aria-hidden", "false");
-
   if (!hasGSAP || reducedMotion) {
-    // Không có GSAP / người dùng giảm chuyển động: hiện thẳng trạng thái đã đọc (định nghĩa trong CSS)
     els.scene.classList.add("is-read");
     state.letter = "open";
     els.btnBack.focus({ preventScroll: true });
     return;
   }
 
-  // Dựng lại phong thư để đo kích thước
   els.scene.classList.remove("is-read");
   els.wrap.classList.add("is-tucked");
   els.flap.classList.remove("is-open");
   gsap.set(ANIM_TARGETS(), { clearProps: "all" });
 
-  const S = els.paper.offsetHeight;             // chiều cao lá thư
-  const E = els.envBack.offsetHeight;           // chiều cao phong thư
+  const S = els.paper.offsetHeight;
+  const E = els.envBack.offsetHeight;
   const W = els.scene.offsetWidth;
   const envTop = els.envBack.offsetTop;
 
-  const tuckY = envTop + E * 0.14;              // thư nằm trong bao, mép trên thấp hơn miệng bao
-  const outY = envTop - S * 0.9 - 6;            // thư đã rút hẳn ra khỏi bao
-  const drop = E * 0.9;                         // phong thư hạ xuống khi rút thư
+  const tuckY = envTop + E * 0.14;
+  const outY = envTop - S * 0.9 - 6;
+  const drop = E * 0.9;
 
-  // Phong thư xuất phát từ vị trí ngọn đèn
   const from = lanternCenter(item);
   const r = els.scene.getBoundingClientRect();
   const dx = from.x - (r.left + W / 2);
@@ -748,7 +835,7 @@ function openLetterAnimated(wish, item) {
   gsap.set(els.paper, { y: tuckY, scale: 0.9, rotation: 0, transformOrigin: "50% 0%" });
   gsap.set(els.wrap, { zIndex: 2 });
   gsap.set(els.actions, { opacity: 0, y: 14 });
-  const lines = Array.prototype.filter.call(els.scroll.children, (c) => !c.hidden);
+  const lines = Array.prototype.filter.call(els.pages.children, (c) => !c.hidden);
   gsap.set(lines, { opacity: 0, y: 10 });
 
   const tl = gsap.timeline({
@@ -756,33 +843,28 @@ function openLetterAnimated(wish, item) {
       els.scene.classList.add("is-read");
       els.wrap.classList.remove("is-tucked");
       els.flap.classList.remove("is-open");
-      // Xoá style inline của GSAP: tránh Chrome vẽ sai clip-path + trả lá thư về bố cục CSS
       gsap.set(ANIM_TARGETS().concat(lines), { clearProps: "all" });
       state.letter = "open";
       state.tl = null;
+      scheduleLayout();
     }
   });
   state.tl = tl;
 
   tl.fromTo(els.backdrop, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power1.out" }, 0)
-    // 1. bay ra từ ngọn đèn
     .fromTo(els.scene,
       { x: dx, y: dy, scale: 0.16, rotation: -16, opacity: 0 },
       { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1, duration: 0.85, ease: "power3.out" }, 0)
-    // 2. dấu sáp phồng lên rồi vỡ
     .to(els.seal, { scale: 1.28, duration: 0.14, ease: "power1.out" }, 0.8)
     .to(els.seal, { scale: 0.15, opacity: 0, rotation: 50, duration: 0.28, ease: "back.in(2)" }, 0.94)
-    // 3. lật nắp
     .to(els.flap, { rotateX: 180, duration: 0.55, ease: "power2.inOut" }, 1.0)
-    .call(() => els.flap.classList.add("is-open"), null, 1.27)     // nắp qua 90° -> nằm sau lá thư
-    // 4. rút thư lên, phong thư hạ xuống
+    .call(() => els.flap.classList.add("is-open"), null, 1.27)
     .to(els.paper, { y: outY, duration: 0.85, ease: "power2.inOut" }, 1.5)
     .to([els.envBack, els.envFront, els.flap, els.seal, els.wrap], { y: drop, duration: 0.85, ease: "power2.inOut" }, 1.5)
-    .call(() => {                                                   // thư đã ra khỏi bao
+    .call(() => {
       els.wrap.classList.remove("is-tucked");
       gsap.set(els.wrap, { zIndex: 6 });
     }, null, 2.35)
-    // 5. đẩy phong thư sang bên, lá thư hạ về giữa và mở rộng
     .to([els.envBack, els.envFront, els.flap], {
       x: -W * 0.9, y: drop + 50, opacity: 0, duration: 0.8, ease: "power2.in"
     }, 2.38)
@@ -790,7 +872,6 @@ function openLetterAnimated(wish, item) {
     .to(els.paper, { y: 0, scale: 1, duration: 0.85, ease: "power3.inOut" }, 2.38)
     .to(els.paper, { rotation: -2.2, duration: 0.4, ease: "sine.out" }, 2.38)
     .to(els.paper, { rotation: 0, duration: 0.6, ease: "back.out(2.2)" }, 2.78)
-    // 6. nút (nội dung đã hiện dần từ lúc rút thư)
     .to(lines, { opacity: 1, y: 0, duration: 0.45, stagger: 0.09, ease: "power1.out" }, 1.85)
     .to(els.actions, { opacity: 1, y: 0, duration: 0.4, ease: "power1.out" }, 3.05)
     .call(() => els.btnBack.focus({ preventScroll: true }), null, 3.1);
@@ -809,17 +890,15 @@ function finishClose() {
   field.paused = false;
   setUrlId("");
 
-  // Dữ liệu có thể đã đổi trong lúc đang đọc thư -> đồng bộ số lượng đèn
-  if (field.items.length !== targetLanternCount()) rebuildField();
+  if (state.needRebuild) rebuildField();   // dữ liệu / kích thước đã đổi trong lúc đang đọc thư
 
   const f = state.lastFocus;
   if (f && f.focus && f.isConnected) f.focus({ preventScroll: true });
 }
 
-// Đóng thư: lá thư gấp lại rồi bay về ngọn đèn của nó
 function closeLetter() {
   if (state.letter !== "open" && state.letter !== "opening") return;
-  if (state.tl) state.tl.progress(1);                         // bỏ qua nốt hiệu ứng mở
+  if (state.tl) state.tl.progress(1);
   state.letter = "closing";
 
   if (!hasGSAP || reducedMotion) { finishClose(); return; }
@@ -843,42 +922,63 @@ function closeLetter() {
     .to(els.backdrop, { opacity: 0, duration: 0.4 }, 0.4);
 }
 
-// Thắp Sáng: mỗi máy 1 lượt / thư. Đèn được thắp càng nhiều càng to, sáng và có quầng Top
-async function lightUp() {
-  if (!state.current) return;
-  const { wish, item } = state.current;
-  const p = lanternCenter(item);
-  const already = likedSet.has(wish.id);
-
-  sky.burst(p.x, p.y, already ? 4 : 10);
-  els.btnLight.classList.remove("is-pulse");
-  void els.btnLight.offsetWidth;                              // restart animation
-  els.btnLight.classList.add("is-pulse");
-
-  if (already) { showToast("Bạn đã thắp sáng lá thư này rồi ✨"); return; }
-
-  likedSet.add(wish.id);
-  saveLiked();
-  lightCounts.set(wish.id, popularity.count(wish.id) + 1);   // cập nhật ngay trên giao diện
-  onLightsChanged();
-
-  if (!pushLight) return;                                     // chế độ demo: chỉ lưu cục bộ
-  try {
-    await pushLight(wish.id);
-  } catch (err) {
-    console.error("[view.js] Không ghi được lượt thắp sáng:", err);
-    likedSet.delete(wish.id);
-    saveLiked();
-    lightCounts.set(wish.id, Math.max(0, popularity.count(wish.id) - 1));
-    onLightsChanged();
-    showToast("Chưa thắp sáng được, vui lòng thử lại");
+// Trái tim bay lên từ nút Yêu thích
+function popHearts(anchor, n) {
+  if (reducedMotion || !anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const colors = ["#C40000", "#FA6322", "#FF6A0B", "#FAB722"];
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("span");
+    s.className = "heart-pop";
+    s.textContent = "♥";
+    s.style.left = cx + "px";
+    s.style.top = cy + "px";
+    s.style.color = colors[Math.floor(Math.random() * colors.length)];
+    s.style.animationDelay = rand(0, 0.15).toFixed(2) + "s";
+    s.style.setProperty("--dx", rand(-70, 70).toFixed(0) + "px");
+    s.style.setProperty("--dy", rand(-130, -55).toFixed(0) + "px");
+    s.style.setProperty("--s", rand(14, 26).toFixed(0) + "px");
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1400);
   }
 }
 
-function onLightsChanged() {
+// Yêu thích: mỗi máy 1 lượt / thư. Thư càng nhiều lượt càng nổi bật nhẹ trên bầu trời
+async function likeWish() {
+  if (!state.current) return;
+  const { wish } = state.current;
+  const already = likedSet.has(wish.id);
+
+  popHearts(els.btnLike, already ? 3 : 9);
+  els.btnLike.classList.remove("is-pulse");
+  void els.btnLike.offsetWidth;
+  els.btnLike.classList.add("is-pulse");
+
+  if (already) { showToast("Bạn đã yêu thích lá thư này rồi ♥"); return; }
+
+  likedSet.add(wish.id);
+  saveLiked();
+  likeCounts.set(wish.id, popularity.count(wish.id) + 1);
+  onLikesChanged();
+
+  if (!pushLike) return;                                      // chế độ demo: chỉ lưu cục bộ
+  try {
+    await pushLike(wish.id);
+  } catch (err) {
+    console.error("[view.js] Không ghi được lượt yêu thích:", err);
+    likedSet.delete(wish.id);
+    saveLiked();
+    likeCounts.set(wish.id, Math.max(0, popularity.count(wish.id) - 1));
+    onLikesChanged();
+    showToast("Chưa yêu thích được, vui lòng thử lại");
+  }
+}
+
+function onLikesChanged() {
   popularity.recompute(state.wishes);
   field.refreshPopularity();
-  updateLightButton();
+  updateLikeButton();
 }
 
 async function copyLink() {
@@ -908,10 +1008,9 @@ function setPanorama(on) {
   document.body.classList.toggle("is-panorama", on);
   els.panoramaBtn.setAttribute("aria-pressed", on ? "true" : "false");
   els.panoramaLabel.textContent = on ? "Thu nhỏ" : "Toàn cảnh";
-  if (state.letter === "closed") rebuildField();
+  if (state.letter === "closed") rebuildField(); else state.needRebuild = true;
 }
 
-// Mã Thư = id của lời chúc (hoặc dán nguyên link có ?id=...)
 function parseCode(raw) {
   const s = (raw || "").trim();
   if (!s) return "";
@@ -928,10 +1027,10 @@ function openByCode(code) {
 /* ---------- Sự kiện giao diện ---------- */
 els.btnBack.addEventListener("click", closeLetter);
 els.backdrop.addEventListener("click", closeLetter);
-els.stage.addEventListener("click", () => {      // bấm vào lá thư khi đang mở -> bỏ qua hiệu ứng
+els.stage.addEventListener("click", () => {
   if (state.letter === "opening" && state.tl) state.tl.progress(1);
 });
-els.btnLight.addEventListener("click", lightUp);
+els.btnLike.addEventListener("click", likeWish);
 els.btnCopy.addEventListener("click", copyLink);
 els.panoramaBtn.addEventListener("click", () => setPanorama(!state.panorama));
 els.codeForm.addEventListener("submit", (e) => {
@@ -940,15 +1039,23 @@ els.codeForm.addEventListener("submit", (e) => {
   if (code && openByCode(code)) els.codeInput.value = "";
 });
 
+function focusables() {
+  return Array.prototype.filter.call(els.overlay.querySelectorAll("button"), (b) =>
+    !b.disabled && b.getClientRects().length > 0 && getComputedStyle(b).visibility !== "hidden");
+}
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (state.letter === "open" || state.letter === "opening") closeLetter();
     else if (state.panorama) setPanorama(false);
     return;
   }
-  // Giữ focus trong hộp thoại khi đang đọc thư
+  if (state.letter === "open") {
+    if (e.key === "ArrowRight") { goPage(1); return; }
+    if (e.key === "ArrowLeft") { goPage(-1); return; }
+  }
   if (e.key === "Tab" && state.letter !== "closed") {
-    const f = Array.prototype.slice.call(els.overlay.querySelectorAll("button"));
+    const f = focusables();
     if (!f.length) return;
     const first = f[0], last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -958,11 +1065,17 @@ document.addEventListener("keydown", (e) => {
 });
 
 let resizeTimer = 0;
+let lastW = window.innerWidth, lastH = window.innerHeight;
 window.addEventListener("resize", () => {
   sky.resize();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (state.letter === "closed" && field.items.length !== targetLanternCount()) rebuildField();
+    const w = window.innerWidth, h = window.innerHeight;
+    // Thanh địa chỉ trên điện thoại co/giãn chỉ làm đổi chiều cao chút ít -> không dựng lại
+    const changed = Math.abs(w - lastW) > 1 || Math.abs(h - lastH) > 80;
+    lastW = w; lastH = h;
+    if (!changed) return;
+    if (state.letter === "closed") rebuildField(); else state.needRebuild = true;
   }, 250);
 });
 
@@ -988,7 +1101,7 @@ function normalize(val) {
       const message = typeof v.message === "string" ? v.message.trim() : "";
       if (!message) return null;
       return {
-        id: key,                                              // id = key tự sinh của Firebase = Mã Thư
+        id: key,
         sender: typeof v.sender === "string" ? v.sender : "",
         isAnonymous: v.isAnonymous === true,
         message,
@@ -1004,19 +1117,18 @@ function applyWishes(list) {
   state.wishes = list;
   field.setWishes(list);
   popularity.recompute(list);
-  if (state.current) updateLightButton();
+  if (state.current) updateLikeButton();
 
   if (!list.length) {
     setStatus("Chưa có lời tri ân nào. Hãy quay lại sau nhé!");
     els.count.textContent = "";
-    field.rebuild(0, 1);
+    field.rebuild(state.panorama);
   } else {
     setStatus("");
-    els.count.textContent = "Đã có " + list.length + " lời tri ân đang bay lên";
-    if (state.letter === "closed") rebuildField();
+    els.count.textContent = "Đã có " + list.length + " lời tri ân đang gửi đến";
+    if (state.letter === "closed") rebuildField(); else state.needRebuild = true;
   }
 
-  // Mở thẳng thư nếu truy cập bằng đường dẫn ?id=...
   if (!state.deepLinkHandled && list.length) {
     state.deepLinkHandled = true;
     const id = new URLSearchParams(location.search).get("id");
@@ -1026,11 +1138,9 @@ function applyWishes(list) {
 
 async function connectData() {
   const demo = new URLSearchParams(location.search).get("demo") === "1";
-  //const demo = 1;
   const FIREBASE_CONFIG = demo ? null : await loadFirebaseConfig();
   if (demo || !FIREBASE_CONFIG) {
     if (!demo) console.warn("[view.js] Chưa có config Firebase hợp lệ -> đang dùng dữ liệu mẫu.");
-    // Demo: mọi thư bắt đầu từ 0 lượt, thắp sáng chỉ lưu tạm trong phiên (tải lại trang là về 0)
     persistLiked = false;
     likedSet.clear();
     applyWishes(DEMO_WISHES);
@@ -1039,7 +1149,6 @@ async function connectData() {
   }
 
   try {
-    // import() động: nếu CDN Firebase lỗi thì chỉ phần dữ liệu lỗi, giao diện vẫn chạy
     const base = "https://www.gstatic.com/firebasejs/" + FIREBASE_SDK_VERSION + "/";
     const [appMod, dbMod] = await Promise.all([
       import(base + "firebase-app.js"),
@@ -1057,23 +1166,23 @@ async function connectData() {
       }
     );
 
-    // Lượt Thắp Sáng: node riêng "lights" = { [id]: số }, cập nhật realtime cho mọi người xem
+    // Lượt Yêu thích: node riêng = { [id]: số }, cập nhật realtime cho mọi người xem
     dbMod.onValue(
-      dbMod.ref(db, LIGHTS_NODE),
+      dbMod.ref(db, LIKES_NODE),
       (snap) => {
         const v = snap.val() || {};
-        lightCounts.clear();
+        likeCounts.clear();
         Object.keys(v).forEach((id) => {
           const n = Math.floor(Number(v[id]));
-          if (n > 0) lightCounts.set(id, n);
+          if (n > 0) likeCounts.set(id, n);
         });
-        onLightsChanged();
+        onLikesChanged();
       },
-      (err) => console.warn("[view.js] Không đọc được lượt thắp sáng:", err)
+      (err) => console.warn("[view.js] Không đọc được lượt yêu thích:", err)
     );
     // Cộng 1 bằng transaction để nhiều người bấm cùng lúc không bị mất lượt
-    pushLight = (id) => dbMod.runTransaction(
-      dbMod.ref(db, LIGHTS_NODE + "/" + id),
+    pushLike = (id) => dbMod.runTransaction(
+      dbMod.ref(db, LIKES_NODE + "/" + id),
       (cur) => (Number(cur) || 0) + 1
     );
   } catch (err) {
@@ -1091,7 +1200,13 @@ if (hasGSAP && !reducedMotion) {
   gsap.from(".hero > *", { opacity: 0, y: 18, duration: 1.2, stagger: 0.25, ease: "power2.out", delay: 0.2 });
 }
 
-// Vòng lặp hoạt ảnh chung cho sao / đom đóm / đèn
+// Font tải xong có thể làm tiêu đề đổi chiều cao -> xếp lại các hàng cho khỏi chạm tiêu đề
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    if (state.letter === "closed" && state.wishes.length) rebuildField();
+  });
+}
+
 let lastTime = performance.now();
 let rafId = 0;
 function frame(now) {
@@ -1108,7 +1223,7 @@ function startLoop() {
   rafId = requestAnimationFrame(frame);
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) cancelAnimationFrame(rafId);   // tiết kiệm pin khi chuyển tab
+  if (document.hidden) cancelAnimationFrame(rafId);
   else startLoop();
 });
 
