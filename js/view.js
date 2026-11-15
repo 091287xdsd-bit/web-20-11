@@ -642,13 +642,26 @@ function fillLetter(w) {
     ? new Date(w.timestamp).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "";
 
-  if (isHttpUrl(w.imageUrl)) {
+  const urls = (w.imageUrl || "").split(",").map(s => s.trim()).filter(isHttpUrl);
+  els.photo.innerHTML = ""; // Xóa trắng khung ảnh cũ
+  
+  if (urls.length > 0) {
     els.photo.hidden = false;
-    els.photoImg.onerror = () => { els.photo.hidden = true; };
-    els.photoImg.src = w.imageUrl;
+    // Lặp qua tất cả link ảnh và tạo thẻ img tương ứng
+    urls.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Ảnh kỷ niệm đính kèm";
+      img.decoding = "async";
+      
+      // Thêm CSS margin nhỏ để các ảnh không bị dính sát vào nhau
+      img.style.marginBottom = "8px"; 
+      
+      img.onerror = () => img.remove(); // Lỗi ảnh nào xóa ảnh đó
+      els.photo.appendChild(img);
+    });
   } else {
     els.photo.hidden = true;
-    els.photoImg.removeAttribute("src");
   }
   els.scroll.scrollTop = 0;
   updateLightButton();

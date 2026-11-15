@@ -375,7 +375,12 @@ function setupWeatherSystem() {
   let autoTimer = setInterval(toggleWeather, 30000);
 
   if (windowEl) {
+    let isToggling = false;
     const handleManualToggle = () => {
+      if (isToggling) return; // Nếu đang chuyển thời tiết thì chặn click
+      isToggling = true;
+      setTimeout(() => isToggling = false, 800); // Khóa click trong 800ms
+      
       clearInterval(autoTimer);
       toggleWeather();
       autoTimer = setInterval(toggleWeather, 30000);
