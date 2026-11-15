@@ -13,11 +13,11 @@ import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm";
    Để trống = chạy chế độ DEMO (chỉ in dữ liệu ra console)
    ---------------------------------------------------------- */
 const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
+  apiKey: "AIzaSyDf302vuOATTUKL_trEvBVsq26u2Sd3o2w",
+  authDomain: "novletter-79ad3.firebaseapp.com",
   databaseURL: "",
-  projectId: "",
-  appId: ""
+  projectId: "novletter-79ad3",
+  appId: "1:383796717561:web:65c59986017c6a6a01ff28"
 };
 
 const CLOUDINARY = {
