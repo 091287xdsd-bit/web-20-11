@@ -36,7 +36,7 @@
       <div class="ambient-lamp__beam"></div>
     </div>
 
-    <!-- Lớp Particles.js: Hiệu ứng bụi phấn rơi nhẹ trong không trung (Technical Stack) -->
+    <!-- Lớp Particles.js: Các ngôi sao di chuyển chậm rãi xung quanh background -->
     <div id="particles-js" class="chalk-particles" aria-hidden="true"></div>
 
     <!-- Lớp mưa nhẹ phủ toàn nền (chỉ hiện khi chuyển sang Mưa kỷ niệm) -->
@@ -139,10 +139,10 @@
       </article>
     </section>
 
-    <!-- Bàn giáo viên phía trước mở rộng chiều ngang: Cuốn sổ tri ân (Pulse Animation) & CTA Nút Con Dấu Nổi -->
+    <!-- Bàn giáo viên phía trước to hơn, đồng bộ màu & bo góc giữa Cuốn Sổ Tri Ân và Viết Lời Tri Ân -->
     <footer class="teacher-desk" data-parallax="0.06">
       <div class="teacher-desk__surface">
-        <!-- Điểm tương tác 3: Cuốn sổ tri ân đặt trên bàn giáo viên phát sáng nhẹ dạng pulse -->
+        <!-- Điểm tương tác 3: Cuốn sổ tri ân (đồng bộ màu & bo góc, đã bỏ dòng chữ phụ) -->
         <div
           class="gratitude-notebook"
           id="gratitude-notebook"
@@ -158,26 +158,27 @@
               <i data-lucide="book-heart" class="icon-md"></i>
               <div class="gratitude-notebook__text">
                 <strong>Cuốn Sổ Tri Ân</strong>
-                <span>Mở đọc tâm thư & Đèn trời</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Điểm tương tác 4: CTA Button "Viết Lời Tri Ân" thiết kế dạng con dấu nổi, hover phát hiệu ứng gợn sóng -->
+        <!-- Điểm tương tác 4: Nút "Viết Lời Tri Ân" (đồng bộ màu & bo góc với Cuốn Sổ, đã bỏ dòng chữ phụ) -->
         <div class="cta-seal-wrapper">
           <a
             href="send.html"
             class="wax-seal-cta"
             id="cta-write-wish"
-            data-tippy-content="Chuyển sang Trang Gửi Thư để viết lời chúc và đóng dấu sáp"
+            data-tippy-content="Chuyển sang Trang Gửi Thư để viết lời chúc gửi thầy cô"
           >
             <span class="wax-seal-cta__ripple wax-seal-cta__ripple--1" aria-hidden="true"></span>
             <span class="wax-seal-cta__ripple wax-seal-cta__ripple--2" aria-hidden="true"></span>
             <span class="wax-seal-cta__core">
-              <i data-lucide="stamp" class="icon-md"></i>
-              <span class="wax-seal-cta__label">Viết Lời Tri Ân</span>
-              <span class="wax-seal-cta__sub">Nghi thức đóng dấu sáp</span>
+              <span class="wax-seal-cta__spine" aria-hidden="true"></span>
+              <span class="wax-seal-cta__content">
+                <i data-lucide="stamp" class="icon-md"></i>
+                <span class="wax-seal-cta__label">Viết Lời Tri Ân</span>
+              </span>
             </span>
           </a>
         </div>
