@@ -3,199 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Góc Ký Ức — Tri Ân Ngày Nhà Giáo Việt Nam 20/11</title>
+  <title>Chào mừng Ngày Nhà giáo Việt Nam · 20/11</title>
 
-  <!-- Google Fonts quy chuẩn theo rule.txt -->
+  <!-- Google Fonts quy chuẩn theo rule.txt & đồng bộ với send.html -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-
-  <!-- SweetAlert2 & Tippy.js CSS (theo Technical Stack trong Đề án) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/shift-away.css">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/home.css">
 </head>
-<body data-weather="sunny">
-  <!-- Bộ lọc SVG Letterpress Deboss: giúp nét mực logo ăn sâu và hơi sần tự nhiên theo thớ giấy cổ -->
-  <svg class="sr-svg-filters" aria-hidden="true" width="0" height="0">
-    <defs>
-      <filter id="vintage-ink-press" x="-8%" y="-8%" width="116%" height="116%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.065" numOctaves="2" result="paperFiber" />
-        <feDisplacementMap in="SourceGraphic" in2="paperFiber" scale="0.9" xChannelSelector="R" yChannelSelector="G" result="inkRoughened" />
-        <feDropShadow dx="0" dy="0.85" stdDeviation="0.25" flood-color="#FFFDF7" flood-opacity="0.85" />
-      </filter>
-    </defs>
-  </svg>
+<body>
+  <main class="hero">
+    <!-- Lớp phông nền sáng ấm đồng bộ style trang send.css + cánh hoa vàng cam theo ảnh mẫu -->
+    <div class="bg" aria-hidden="true">
+      <span class="blob b1"></span>
+      <span class="blob b2"></span>
+      <span class="blob b3"></span>
 
-  <main class="classroom-scene" id="scene-root">
-    <!-- Hiệu ứng ánh đèn phòng học ấm áp chiếu từ trên xuống -->
-    <div class="ambient-lamp" aria-hidden="true">
-      <div class="ambient-lamp__cord"></div>
-      <div class="ambient-lamp__shade"></div>
-      <div class="ambient-lamp__beam"></div>
+      <!-- Cánh hoa ánh sáng mờ góc phải theo đúng ảnh thiết kế mẫu -->
+      <svg class="hero__floral" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="petalWarm" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stop-color="#FACC15" stop-opacity="0.95" />
+            <stop offset="55%" stop-color="#F59E0B" stop-opacity="0.82" />
+            <stop offset="100%" stop-color="#FDE68A" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="petalBright" cx="45%" cy="45%" r="55%">
+            <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.98" />
+            <stop offset="60%" stop-color="#FACC15" stop-opacity="0.88" />
+            <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="petalSoftPink" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FDFBF7" stop-opacity="0.92" />
+            <stop offset="50%" stop-color="#FECDD3" stop-opacity="0.52" />
+            <stop offset="100%" stop-color="#FDE68A" stop-opacity="0.2" />
+          </linearGradient>
+          <filter id="softBlur" x="-25%" y="-25%" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="24" />
+          </filter>
+          <filter id="deepBlur" x="-35%" y="-35%" width="170%" height="170%">
+            <feGaussianBlur stdDeviation="42" />
+          </filter>
+        </defs>
+
+        <ellipse cx="780" cy="240" rx="260" ry="120" transform="rotate(-32 780 240)" fill="url(#petalSoftPink)" filter="url(#deepBlur)" />
+        <ellipse cx="830" cy="340" rx="280" ry="135" transform="rotate(-18 830 340)" fill="url(#petalWarm)" filter="url(#deepBlur)" />
+        <ellipse cx="670" cy="480" rx="220" ry="110" transform="rotate(-28 670 480)" fill="url(#petalBright)" filter="url(#softBlur)" />
+        <ellipse cx="770" cy="560" rx="250" ry="125" transform="rotate(14 770 560)" fill="url(#petalBright)" filter="url(#softBlur)" />
+        <ellipse cx="640" cy="650" rx="230" ry="115" transform="rotate(36 640 650)" fill="url(#petalWarm)" filter="url(#softBlur)" />
+        <circle cx="730" cy="530" r="150" fill="#FACC15" opacity="0.75" filter="url(#deepBlur)" />
+      </svg>
+
+      <!-- Lớp hạt grain mịn tạo chất cảm giấy thiệp như trang send -->
+      <div class="hero__grain"></div>
     </div>
 
-    <!-- Lớp Particles.js: Các ngôi sao di chuyển chậm rãi xung quanh background -->
-    <div id="particles-js" class="chalk-particles" aria-hidden="true"></div>
+    <!-- Lớp bụi nắng nhẹ nhàng bay trên nền -->
+    <div class="dust-layer" aria-hidden="true"></div>
 
-    <!-- Lớp mưa nhẹ phủ toàn nền (chỉ hiện khi chuyển sang Mưa kỷ niệm) -->
-    <canvas id="fullscreen-rain-canvas" class="fullscreen-rain" aria-hidden="true"></canvas>
+    <!-- Thanh điều hướng trên cùng: 2 nút ở 2 góc trái và phải, tối giản hòa hợp với background -->
+    <header class="topbar">
+      <a class="top-action" href="send.html">VIẾT LỜI TRI ÂN</a>
+      <a class="top-action" href="view.html">CUỐN SỔ TRI ÂN</a>
+    </header>
 
-    <!-- Vật phẩm lớp học chứa Logo CLB BOT BEE: Phù hiệu giấy dập nổi đóng trên bảng gỗ sồi -->
-    <aside
-      class="club-plaque"
-      data-parallax="0.025"
-      aria-label="Phù hiệu CLB BOT BEE Robotics Club"
-      data-tippy-content="BOT BEE Robotics Club — Đơn vị thực hiện dự án Góc Ký Ức 20/11"
+    <!-- Nội dung chính theo đúng bố cục ảnh thiết kế -->
+    <section class="content">
+      <div class="title-group">
+        <h1 class="title">
+          <span class="title__line">CHÀO MỪNG</span>
+          <span class="title__line">NGÀY NHÀ GIÁO VIỆT NAM</span>
+        </h1>
+
+        <!-- Dòng ca dao & nguồn nằm ngay dưới chữ Ngày Nhà giáo Việt Nam (không có bảng, chữ chạy mượt từ trái sang phải) -->
+        <div class="proverb-minimal" id="proverb-box" aria-live="polite">
+          <blockquote class="proverb-minimal__quote" id="chalk-quote"></blockquote>
+          <cite class="proverb-minimal__author" id="chalk-author"></cite>
+        </div>
+      </div>
+
+      <p class="date" aria-label="Ngày 20 tháng 11">20/11</p>
+    </section>
+
+    <!-- Hai ô vuông trắng chéo nhau ở góc dưới trái (theo đúng ảnh mẫu) -->
+    <div class="checker" aria-hidden="true">
+      <span class="checker__sq checker__sq--top-right"></span>
+      <span class="checker__sq checker__sq--bottom-left"></span>
+    </div>
+
+    <!-- Logo CLB góc dưới phải theo ảnh mẫu (tự ẩn nếu chưa có file ảnh) -->
+    <img
+      class="corner-logo"
+      src="assets/logo-clb.png"
+      alt="BOT BEE Robotics Club"
+      draggable="false"
+      onerror="this.style.display='none'"
     >
-      <div class="club-plaque__hanger" aria-hidden="true">
-        <span class="club-plaque__nail"></span>
-      </div>
-
-      <div class="club-plaque__frame">
-        <div class="club-plaque__brass-trim" aria-hidden="true"></div>
-
-        <div class="club-plaque__paper">
-          <span class="plaque-corner plaque-corner--tl" aria-hidden="true"></span>
-          <span class="plaque-corner plaque-corner--tr" aria-hidden="true"></span>
-          <span class="plaque-corner plaque-corner--bl" aria-hidden="true"></span>
-          <span class="plaque-corner plaque-corner--br" aria-hidden="true"></span>
-
-          <div class="club-plaque__emblem-well">
-            <img
-              class="club-plaque__logo"
-              src="assets/logo-clb.png"
-              alt="BOT BEE Robotics Club"
-              draggable="false"
-            >
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Hero Header: Tiêu đề "Góc Ký Ức" & "CHÀO MỪNG..." to hơn, căn dịch xuống gần bảng đen -->
-    <section class="hero-header" data-parallax="0.02">
-      <p class="hero-header__eyebrow">CHÀO MỪNG NGÀY NHÀ GIÁO VIỆT NAM 20/11</p>
-      <h1 class="hero-header__title" id="handwriting-title" aria-label="Góc Ký Ức">
-        <span class="handwrite-text" id="handwrite-target">Góc Ký Ức</span>
-        <span class="handwrite-pen" id="handwrite-pen" aria-hidden="true">
-          <i data-lucide="feather" class="icon-sm"></i>
-        </span>
-      </h1>
-    </section>
-
-    <!-- Không gian Lớp học cổ điển (Bố cục 2 cột có chiều sâu Parallax: Cửa sổ + Bảng đen) -->
-    <section class="classroom-stage" aria-label="Không gian lớp học cổ điển">
-      <!-- Điểm tương tác 1: Cửa sổ lớp học (Không chú thích, bỏ tán cây xanh lá bên ngoài) -->
-      <div
-        class="window-frame"
-        id="classroom-window"
-        data-parallax="0.04"
-        role="button"
-        tabindex="0"
-        aria-label="Cửa sổ lớp học"
-      >
-        <div class="window-frame__sky">
-          <!-- Mặt trời & tia nắng ban mai -->
-          <div class="sky-sun"></div>
-          <div class="sky-sunbeams"></div>
-
-          <!-- Mây trôi nhẹ -->
-          <div class="sky-cloud sky-cloud--1"></div>
-          <div class="sky-cloud sky-cloud--2"></div>
-        </div>
-
-        <!-- Khung gỗ cửa sổ cổ điển 4 ô -->
-        <div class="window-frame__mullions" aria-hidden="true"></div>
-
-        <!-- Bệ cửa sổ -->
-        <div class="window-frame__sill"></div>
-      </div>
-
-      <!-- Điểm tương tác 2: Bảng đen lớp học (Hiển thị ngạn ngữ, trích dẫn về thầy cô ngẫu nhiên) -->
-      <article
-        class="blackboard"
-        id="classroom-blackboard"
-        data-parallax="0.03"
-      >
-        <div class="blackboard__header">
-          <span class="blackboard__date">Chào mừng Ngày Nhà Giáo Việt Nam 20/11</span>
-        </div>
-
-        <div class="blackboard__body">
-          <blockquote class="blackboard__quote" id="chalk-quote">
-            “Một người thầy giỏi giống như ngọn nến — cháy hết mình để thắp sáng đường đi cho những người khác.”
-          </blockquote>
-          <cite class="blackboard__author" id="chalk-author">— Khuyết danh</cite>
-        </div>
-
-        <!-- Khay phấn & khăn lau bảng -->
-        <div class="blackboard__tray" aria-hidden="true">
-          <span class="chalk-piece chalk-piece--white"></span>
-          <span class="chalk-piece chalk-piece--yellow"></span>
-          <span class="chalk-duster"></span>
-        </div>
-      </article>
-    </section>
-
-    <!-- Bàn giáo viên phía trước to hơn, đồng bộ màu & bo góc giữa Cuốn Sổ Tri Ân và Viết Lời Tri Ân -->
-    <footer class="teacher-desk" data-parallax="0.06">
-      <div class="teacher-desk__surface">
-        <!-- Điểm tương tác 3: Cuốn sổ tri ân (đồng bộ màu & bo góc, đã bỏ dòng chữ phụ) -->
-        <div
-          class="gratitude-notebook"
-          id="gratitude-notebook"
-          role="button"
-          tabindex="0"
-          aria-label="Cuốn sổ tri ân: Nhấp để đến trang ngắm đèn trời và đọc lời tri ân"
-          data-tippy-content="Nhấp để ngắm đèn trời và đọc những lời chúc gửi thầy cô"
-        >
-          <div class="gratitude-notebook__glow" aria-hidden="true"></div>
-          <div class="gratitude-notebook__cover">
-            <div class="gratitude-notebook__spine"></div>
-            <div class="gratitude-notebook__content">
-              <i data-lucide="book-heart" class="icon-md"></i>
-              <div class="gratitude-notebook__text">
-                <strong>Cuốn Sổ Tri Ân</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Điểm tương tác 4: Nút "Viết Lời Tri Ân" (đồng bộ màu & bo góc với Cuốn Sổ, đã bỏ dòng chữ phụ) -->
-        <div class="cta-seal-wrapper">
-          <a
-            href="send.html"
-            class="wax-seal-cta"
-            id="cta-write-wish"
-            data-tippy-content="Chuyển sang Trang Gửi Thư để viết lời chúc gửi thầy cô"
-          >
-            <span class="wax-seal-cta__ripple wax-seal-cta__ripple--1" aria-hidden="true"></span>
-            <span class="wax-seal-cta__ripple wax-seal-cta__ripple--2" aria-hidden="true"></span>
-            <span class="wax-seal-cta__core">
-              <span class="wax-seal-cta__spine" aria-hidden="true"></span>
-              <span class="wax-seal-cta__content">
-                <i data-lucide="stamp" class="icon-md"></i>
-                <span class="wax-seal-cta__label">Viết Lời Tri Ân</span>
-              </span>
-            </span>
-          </a>
-        </div>
-      </div>
-    </footer>
   </main>
 
-  <!-- Technical Stack CDNs theo đúng rule.txt & Đề án: GSAP + ScrollTrigger, Particles.js, Lucide Icons, Tippy.js, SweetAlert2 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/@popperjs/core@2"></script>
-  <script src="https://unpkg.com/tippy.js@6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <!-- Script module theo đúng rule.txt -->
   <script type="module" src="js/home.js"></script>
 </body>
 </html>

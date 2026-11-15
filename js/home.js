@@ -1,408 +1,199 @@
-// home.js - Bản 2: Dựng lại hoàn toàn Trang 1 "Góc Ký Ức" theo đúng tài liệu Đề án
-// Tuân thủ rule.txt: Chỉ xử lý hiệu ứng & điều hướng của trang Home (Cặp 1). Không đụng tới Firebase.
+// home.js – Trang chủ (Cặp 1)
+// Bố cục theo ảnh thiết kế mẫu + đồng bộ chuyển động GSAP với send.js
+// Giữ tính năng 30 câu danh ngôn / ca dao về thầy cô chạy hiệu ứng mượt từ trái sang phải bên dưới tiêu đề
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rand = (min, max) => Math.random() * (max - min) + min;
 
-// Danh sách 30 câu ca dao, tục ngữ, danh ngôn về thầy cô hiển thị trên Bảng đen (15s chuyển 1 lần)
-const CHALKBOARD_QUOTES = [
-  {
-    quote: '“Muốn sang thì bắc cầu kiều, muốn con hay chữ thì yêu lấy thầy.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Nhất tự vi sư, bán tự vi sư.”',
-    author: '— Tục ngữ truyền thống'
-  },
-  {
-    quote: '“Không thầy đố mày làm nên.”',
-    author: '— Tục ngữ Việt Nam'
-  },
-  {
-    quote: '“Cơm cha, áo mẹ, chữ thầy — Gắng công mà học có ngày thành danh.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Mười năm rèn luyện sách đèn, công danh gặp bước chớ quên ơn thầy.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Ơn thầy soi lối mở đường, cho con vững bước dặm trường tương lai.”',
-    author: '— Ca dao tri ân'
-  },
-  {
-    quote: '“Mồng một tết cha, mồng hai tết mẹ, mồng ba tết thầy.”',
-    author: '— Tục ngữ Việt Nam'
-  },
-  {
-    quote: '“Gươm vàng rớt xuống Hồ Tây, ơn cha nghĩa trọng công thầy cũng sâu.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Tôn sư trọng đạo, uống nước nhớ nguồn.”',
-    author: '— Truyền thống hiếu học'
-  },
-  {
-    quote: '“Ăn quả nhớ kẻ trồng cây, có danh có vọng nhớ thầy khi xưa.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Chữ thầy trong cõi người ta, dẫu dài muôn dặm chẳng nhòa tháng năm.”',
-    author: '— Thơ tri ân'
-  },
-  {
-    quote: '“Bụi phấn rơi rơi trên bục giảng, tóc thầy bạc trắng theo tháng năm.”',
-    author: '— Ký ức mái trường'
-  },
-  {
-    quote: '“Con đò dịch bến sang ngang, lời thầy ấm áp hành trang vào đời.”',
-    author: '— Ca dao tri ân'
-  },
-  {
-    quote: '“Dẫu đi khắp bốn phương trời, công thầy nghĩa nặng trọn đời khắc ghi.”',
-    author: '— Ca dao Việt Nam'
-  },
-  {
-    quote: '“Một đời chở khách qua sông, thuyền neo bến cũ nhớ mong học trò.”',
-    author: '— Thơ tặng thầy cô'
-  },
-  {
-    quote: '“Có một nghề bụi phấn bám đầy tay, người ta bảo đó là nghề trong sạch nhất.”',
-    author: '— Thơ Đinh Văn Nhã'
-  },
-  {
-    quote: '“Có một nghề không trồng cây vào đất, mà mang lại cho Đời đầy trái ngọt hoa tươi.”',
-    author: '— Thơ Đinh Văn Nhã'
-  },
-  {
-    quote: '“Một người thầy giỏi giống như ngọn nến — cháy hết mình để thắp sáng đường đi cho những người khác.”',
-    author: '— Mustafa Kemal Atatürk'
-  },
-  {
-    quote: '“Dưới ánh mặt trời không có nghề nào cao quý hơn nghề dạy học.”',
-    author: '— Comenius'
-  },
-  {
-    quote: '“Người thầy trung bình chỉ biết nói, người thầy giỏi biết giải thích, người thầy xuất chúng biết minh họa, người thầy vĩ đại biết truyền cảm hứng.”',
-    author: '— William Arthur Ward'
-  },
+// Danh sách 30 câu danh ngôn của các danh nhân nổi tiếng & ca dao/tục ngữ truyền thống (15s chuyển 1 lần)
+const TEACHER_PROVERBS = [
   {
     quote: '“Vì lợi ích mười năm thì phải trồng cây, vì lợi ích trăm năm thì phải trồng người.”',
-    author: '— Chủ tịch Hồ Chí Minh'
+    author: '— Hồ Chí Minh'
   },
   {
     quote: '“Nghề dạy học là nghề cao quý nhất trong những nghề cao quý, nghề sáng tạo nhất trong những nghề sáng tạo.”',
     author: '— Phạm Văn Đồng'
   },
   {
-    quote: '“Một gánh sách không bằng một người thầy giỏi.”',
-    author: '— Ngạn ngữ phương Đông'
+    quote: '“Dưới ánh mặt trời không có nghề nào cao quý hơn nghề dạy học.”',
+    author: '— Comenius'
   },
   {
-    quote: '“Trọng thầy mới được làm thầy.”',
-    author: '— Tục ngữ Việt Nam'
+    quote: '“Một người thầy giỏi giống như ngọn nến — cháy hết mình để thắp sáng đường đi cho những người khác.”',
+    author: '— Mustafa Kemal Atatürk'
   },
   {
-    quote: '“Học thầy không tày học bạn, nhưng vắng thầy chèo chống khó qua sông.”',
-    author: '— Ca dao học đường'
+    quote: '“Người thầy trung bình chỉ biết nói, người thầy giỏi biết giải thích, người thầy xuất chúng biết minh họa, người thầy vĩ đại biết truyền cảm hứng.”',
+    author: '— William Arthur Ward'
   },
   {
-    quote: '“Thầy cô là người gieo hạt giống tri thức và tưới tắm ước mơ cho bao thế hệ học trò.”',
-    author: '— Tri ân 20/11'
+    quote: '“Nghệ thuật tối thượng của người thầy là đánh thức niềm vui trong sự sáng tạo và tri thức.”',
+    author: '— Albert Einstein'
   },
   {
-    quote: '“Thời gian dẫu có phai mờ, tình thầy nghĩa bạn bao giờ lãng quên.”',
-    author: '— Ca dao kỷ niệm'
+    quote: '“Tôi mang ơn cha mẹ cho tôi sự sống, nhưng mang ơn thầy tôi vì đã dạy tôi sống cho đẹp.”',
+    author: '— Alexander Đại Đế'
   },
   {
-    quote: '“Bảng đen phấn trắng một thời, lời thầy cô dạy suốt đời mang theo.”',
-    author: '— Ca dao học trò'
+    quote: '“Giáo dục là vũ khí mạnh nhất mà người ta có thể sử dụng để thay đổi thế giới.”',
+    author: '— Nelson Mandela'
   },
   {
-    quote: '“Nắng mưa dãi dầu con đò nhỏ, đưa biết bao người cập bến ước mơ.”',
-    author: '— Lưu bút ngày xanh'
+    quote: '“Một đứa trẻ, một người thầy, một quyển sách và một cây bút có thể thay đổi cả thế giới.”',
+    author: '— Malala Yousafzai'
   },
   {
-    quote: '“Dạy con từ thuở còn thơ, ơn thầy dạy dỗ bến bờ tương lai.”',
-    author: '— Ca dao Việt Nam'
+    quote: '“Người thầy chạm đến sự vĩnh cửu; không ai có thể biết được ảnh hưởng của người thầy sẽ dừng lại ở đâu.”',
+    author: '— Henry Brooks Adams'
+  },
+  {
+    quote: '“Những gì người thầy là, quan trọng hơn những gì người thầy dạy.”',
+    author: '— Karl Menninger'
+  },
+  {
+    quote: '“Nếu một kỹ sư vui mừng nhìn thấy cây cầu mình vừa mới xây xong, người nông dân mỉm cười nhìn đồng lúa mình vừa mới trồng, thì người giáo viên vui sướng khi nhìn thấy học sinh đang trưởng thành, lớn lên.”',
+    author: '— Gô-lô-bô-lin'
+  },
+  {
+    quote: '“Phải tôn kính thầy dạy mình, bởi lẽ nếu cha mẹ cho ta sự sống thì chính các thầy giáo cho ta phương cách sống đàng hoàng tử tế.”',
+    author: '— Philoxène de Cythère'
+  },
+  {
+    quote: '“Để cho con một hòm vàng không bằng dạy cho con một quyển sách hay.”',
+    author: '— Vi Hiền Truyện'
+  },
+  {
+    quote: '“Nhân cách của người thầy là sức mạnh có ảnh hưởng to lớn đối với học sinh, sức mạnh đó không thể thay thế bằng bất kỳ cuốn sách giáo khoa nào.”',
+    author: '— Konstantin Ushinsky'
+  },
+  {
+    quote: '“Bậc thầy về nghệ thuật sống không phân biệt rạch ròi giữa công việc và niềm vui, giữa dạy học và truyền lửa.”',
+    author: '— L. P. Jacks'
+  },
+  {
+    quote: '“Giáo dục không phải là việc đổ đầy một chiếc bình, mà là thắp lên một ngọn lửa.”',
+    author: '— William Butler Yeats'
+  },
+  {
+    quote: '“Thầy giáo là đường tinh lọc, là thỏi vàng nguyên chất trong cuộc đời học trò.”',
+    author: '— Nguyễn Bá Học'
+  },
+  {
+    quote: '“Tiên học lễ, hậu học văn.”',
+    author: '— Chu Văn An'
+  },
+  {
+    quote: '“Hiền tài là nguyên khí của quốc gia.”',
+    author: '— Thân Nhân Trung'
+  },
+  {
+    quote: '“Ngọc không mài không thành đồ vật, người không học không biết rõ đạo.”',
+    author: '— La Sơn Phu Tử Nguyễn Thiếp'
+  },
+  {
+    quote: '“Có một nghề bụi phấn bám đầy tay, người ta bảo đó là nghề trong sạch nhất. Có một nghề không trồng cây vào đất, mà mang lại cho Đời đầy trái ngọt hoa tươi.”',
+    author: '— Đinh Văn Nhã'
+  },
+  {
+    quote: '“Khi thầy viết bảng, bụi phấn rơi rơi, có hạt bụi nào rơi trên bục giảng, có hạt bụi nào vương trên tóc thầy…”',
+    author: '— Vũ Hoàng'
+  },
+  {
+    quote: '“Muốn sang thì bắc cầu kiều, muốn con hay chữ thì yêu lấy thầy.”',
+    author: '— Ca dao'
+  },
+  {
+    quote: '“Cơm cha, áo mẹ, chữ thầy — Gắng công mà học có ngày thành danh.”',
+    author: '— Ca dao'
+  },
+  {
+    quote: '“Mười năm rèn luyện sách đèn, công danh gặp bước chớ quên ơn thầy.”',
+    author: '— Ca dao'
+  },
+  {
+    quote: '“Gươm vàng rớt xuống Hồ Tây, ơn cha nghĩa trọng công thầy cũng sâu.”',
+    author: '— Ca dao'
+  },
+  {
+    quote: '“Ăn quả nhớ kẻ trồng cây, có danh có vọng nhớ thầy khi xưa.”',
+    author: '— Ca dao'
+  },
+  {
+    quote: '“Nhất tự vi sư, bán tự vi sư.”',
+    author: '— Tục ngữ'
+  },
+  {
+    quote: '“Không thầy đố mày làm nên.”',
+    author: '— Tục ngữ'
   }
 ];
 
-let currentQuoteIdx = Math.floor(Math.random() * CHALKBOARD_QUOTES.length);
-let weatherState = 'sunny'; // 'sunny' | 'rainy'
-let windowRainAnimId = null;
+let currentQuoteIdx = Math.floor(Math.random() * TEACHER_PROVERBS.length);
 
-// ===== 1. Khởi tạo Lucide Icons & Tippy.js Tooltips (theo Technical Stack) =====
-function initUI() {
-  if (typeof window.lucide !== 'undefined') {
-    window.lucide.createIcons();
-  }
-
-  if (typeof window.tippy !== 'undefined') {
-    window.tippy('[data-tippy-content]', {
-      animation: 'shift-away',
-      duration: [240, 180]
-    });
-  }
-}
-
-// ===== 2. Hiệu ứng viết tay slow-motion cho tiêu đề "Góc Ký Ức" (theo Đề án) =====
-function playHandwritingTitle() {
-  const target = document.getElementById('handwrite-target');
-  const pen = document.getElementById('handwrite-pen');
-  if (!target) return;
-
-  const text = target.textContent.trim();
-  target.innerHTML = '';
-
-  const chars = [...text].map((ch) => {
-    const span = document.createElement('span');
-    span.className = 'handwrite-char';
-    span.textContent = ch === ' ' ? '\u00A0' : ch;
-    target.appendChild(span);
-    return span;
-  });
-
-  if (prefersReducedMotion || typeof window.gsap === 'undefined') {
-    chars.forEach((c) => {
-      c.style.opacity = '1';
-      c.style.transform = 'none';
-    });
-    return;
-  }
+// ===== 1. Hiệu ứng bụi nắng ấm áp trôi từ trên xuống hết màn hình rồi lặp lại =====
+function createSunlightDust() {
+  const layer = document.querySelector('.dust-layer');
+  if (!layer || typeof window.gsap === 'undefined') return;
 
   const gsap = window.gsap;
-  gsap.to(chars, {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    duration: 0.45,
-    stagger: 0.14,
-    ease: 'back.out(1.6)'
-  });
+  const isMobile = window.innerWidth < 640;
+  const count = isMobile ? 24 : 48;
+  const colors = [
+    'rgba(255, 255, 255, 0.92)',
+    'rgba(253, 230, 138, 0.88)', // --amber-soft (#FDE68A)
+    'rgba(245, 158, 11, 0.72)'   // --amber (#F59E0B)
+  ];
 
-  if (pen) {
+  for (let i = 0; i < count; i++) {
+    const size = rand(3.5, 11);
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const dot = document.createElement('span');
+    dot.className = 'dust';
+    dot.style.width = dot.style.height = `${size}px`;
+    dot.style.background = `radial-gradient(circle, ${color} 0%, transparent 72%)`;
+    dot.style.filter = `blur(${rand(0.4, 2)}px)`;
+    layer.appendChild(dot);
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const startX = rand(0, w);
+    const startY = rand(-h * 0.2, h);
+
+    gsap.set(dot, { x: startX, y: startY, opacity: rand(0.25, 0.75) });
+
+    // Rơi nhẹ nhàng xuống hết đáy màn hình rồi lặp lại từ đỉnh
+    const fallDuration = rand(12, 24);
     gsap.fromTo(
-      pen,
-      { x: -16, y: -8, rotation: -18, opacity: 0 },
+      dot,
+      { y: -20, x: startX },
       {
-        x: 0,
-        y: 0,
-        rotation: 8,
-        opacity: 1,
-        duration: chars.length * 0.14 + 0.3,
-        ease: 'sine.inOut'
+        y: h + 30,
+        x: startX + rand(-70, 70),
+        duration: fallDuration,
+        ease: 'none',
+        repeat: -1,
+        delay: -rand(0, fallDuration)
       }
     );
-  }
-}
 
-// ===== 3. Hiệu ứng các ngôi sao đi xuống hết màn hình rồi lặp lại vòng lặp từ trên xuống =====
-function initStarParticles() {
-  const el = document.getElementById('particles-js');
-  if (!el) return;
-
-  if (typeof window.particlesJS !== 'undefined') {
-    window.particlesJS('particles-js', {
-      particles: {
-        number: {
-          value: window.innerWidth < 640 ? 35 : 68,
-          density: { enable: true, value_area: 850 }
-        },
-        color: {
-          value: ['#FDE68A', '#F59E0B', '#F8FAFC']
-        },
-        shape: {
-          type: 'star',
-          stroke: { width: 0, color: '#000000' },
-          polygon: { nb_sides: 5 }
-        },
-        opacity: {
-          value: 0.8,
-          random: true,
-          anim: {
-            enable: true,
-            speed: 0.8,
-            opacity_min: 0.25,
-            sync: false
-          }
-        },
-        size: {
-          value: 5,
-          random: true,
-          anim: {
-            enable: true,
-            speed: 1.2,
-            size_min: 2,
-            sync: false
-          }
-        },
-        line_linked: { enable: false },
-        move: {
-          enable: true,
-          speed: 1.45,
-          direction: 'bottom',
-          random: false,
-          straight: false,
-          out_mode: 'out',
-          bounce: false
-        }
-      },
-      interactivity: {
-        detect_on: 'canvas',
-        events: {
-          onhover: { enable: true, mode: 'bubble' },
-          onclick: { enable: false },
-          resize: true
-        },
-        modes: {
-          bubble: { distance: 120, size: 7, duration: 2, opacity: 1, speed: 2 }
-        }
-      },
-      retina_detect: true
+    gsap.to(dot, {
+      opacity: rand(0.2, 0.8),
+      duration: rand(2.5, 5),
+      ease: 'sine.inOut',
+      repeat: -1,
+      yoyo: true
     });
   }
 }
 
-// ===== 4. Thời tiết: Khi chuyển từ Mưa -> Nắng, những giọt đang trên màn hình tiếp tục rơi hết xuống đáy mới dừng =====
-function setupWeatherSystem() {
-  const canvas = document.getElementById('fullscreen-rain-canvas');
-  const windowEl = document.getElementById('classroom-window');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const resizeCanvas = () => {
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  };
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  const dropCount = window.innerWidth < 640 ? 24 : 48;
-  const spawn = (initial) => {
-    const len = Math.random() * 14 + 14;
-    return {
-      x: Math.random() * window.innerWidth,
-      y: initial ? -Math.random() * window.innerHeight * 0.6 : -len - Math.random() * 150,
-      len,
-      speed: Math.random() * 3 + 6,
-      alpha: Math.random() * 0.3 + 0.45,
-      active: true
-    };
-  };
-
-  let raindrops = [];
-  let isLoopRunning = false;
-
-  function renderRain() {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-    ctx.lineWidth = 1.6;
-    ctx.lineCap = 'round';
-
-    let activeCount = 0;
-
-    raindrops.forEach((drop, i) => {
-      if (!drop.active) return;
-
-      // Vẽ những giọt đang rơi
-      ctx.strokeStyle = `rgba(241, 245, 249, ${drop.alpha})`;
-      ctx.beginPath();
-      ctx.moveTo(drop.x, drop.y);
-      ctx.lineTo(drop.x, drop.y + drop.len);
-      ctx.stroke();
-
-      drop.y += drop.speed;
-
-      // Khi giọt mưa chạm đáy màn hình:
-      if (drop.y > window.innerHeight) {
-        if (weatherState === 'rainy') {
-          // Đang ở chế độ mưa -> sinh giọt mới từ trên đỉnh rơi tiếp
-          raindrops[i] = spawn(false);
-          activeCount++;
-        } else {
-          // Đã chuyển sang chế độ sáng -> không sinh thêm giọt mới, đánh dấu giọt này đã rơi xong
-          drop.active = false;
-        }
-      } else {
-        // Nếu đang ở chế độ sáng mà giọt mưa lúc đầu còn nằm khuất phía trên màn hình (y + len < 0)
-        // thì huỷ luôn để không có giọt mới bất ngờ xuất hiện từ rìa trên
-        if (weatherState !== 'rainy' && drop.y + drop.len < 0) {
-          drop.active = false;
-        } else {
-          activeCount++;
-        }
-      }
-    });
-
-    // Tiếp tục chạy vòng lặp cho đến khi giọt mưa cuối cùng trên màn hình rơi khuất hẳn xuống đáy
-    if (weatherState === 'rainy' || activeCount > 0) {
-      windowRainAnimId = requestAnimationFrame(renderRain);
-    } else {
-      isLoopRunning = false;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    }
-  }
-
-  const toggleWeather = () => {
-    weatherState = weatherState === 'sunny' ? 'rainy' : 'sunny';
-    document.body.setAttribute('data-weather', weatherState);
-
-    if (weatherState === 'rainy') {
-      // Nếu lúc chuyển lại sang mưa mà vẫn còn vài giọt cũ đang rơi dở thì giữ nguyên cho tự nhiên,
-      // chỉ khởi tạo lại những giọt đã rơi xong (active === false)
-      if (raindrops.length === 0) {
-        raindrops = Array.from({ length: dropCount }, () => spawn(true));
-      } else {
-        raindrops.forEach((d, i) => {
-          if (!d.active) {
-            raindrops[i] = spawn(true);
-          }
-        });
-      }
-
-      if (!isLoopRunning) {
-        isLoopRunning = true;
-        cancelAnimationFrame(windowRainAnimId);
-        renderRain();
-      }
-    }
-    // Khi chuyển sang 'sunny': KHÔNG gọi cancelAnimationFrame hay clearRect ngay lập tức,
-    // để vòng lặp renderRain() tự cho những giọt đang có trên màn hình chảy nốt xuống đáy rồi mới tự tắt.
-  };
-
-  let autoTimer = setInterval(toggleWeather, 30000);
-
-  if (windowEl) {
-    let isToggling = false;
-    const handleManualToggle = () => {
-      if (isToggling) return; // Nếu đang chuyển thời tiết thì chặn click
-      isToggling = true;
-      setTimeout(() => isToggling = false, 800); // Khóa click trong 800ms
-      
-      clearInterval(autoTimer);
-      toggleWeather();
-      autoTimer = setInterval(toggleWeather, 30000);
-    };
-    windowEl.addEventListener('click', handleManualToggle);
-    windowEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handleManualToggle();
-      }
-    });
-  }
-}
-
-// ===== 5. Bảng đen: 30 câu ca dao, 15s chuyển 1 lần (chữ mất dần từ trái sang phải rồi hiện lại từ trái sang phải) =====
-function setupBlackboardQuotes() {
+// ===== 2. Hiệu ứng danh ngôn / ca dao & nguồn: Chữ mất dần từ trái sang phải rồi hiện câu mới từ trái sang phải =====
+function setupProverbRotator() {
   const quoteEl = document.getElementById('chalk-quote');
   const authorEl = document.getElementById('chalk-author');
-  const bodyEl = document.querySelector('.blackboard__body');
-
   if (!quoteEl || !authorEl) return;
 
+  // Tách chữ thành từng ký tự (gom theo từ để không bị gãy dòng giữa từ)
   const fillWithChars = (el, text) => {
     el.textContent = '';
     const words = text.split(' ');
@@ -421,39 +212,19 @@ function setupBlackboardQuotes() {
   };
 
   const renderQuote = (idx) => {
-    const item = CHALKBOARD_QUOTES[idx];
+    const item = TEACHER_PROVERBS[idx];
     fillWithChars(quoteEl, item.quote);
     fillWithChars(authorEl, item.author);
     return [...quoteEl.querySelectorAll('.q-char'), ...authorEl.querySelectorAll('.q-char')];
   };
 
-  const lockBoardSize = () => {
-    if (!bodyEl) return;
-    bodyEl.style.minHeight = '0px';
-    let maxH = 0;
-    CHALKBOARD_QUOTES.forEach((_, i) => {
-      renderQuote(i);
-      maxH = Math.max(maxH, bodyEl.offsetHeight);
-    });
-    bodyEl.style.minHeight = maxH + 'px';
-    renderQuote(currentQuoteIdx);
-  };
-
   renderQuote(currentQuoteIdx);
-  lockBoardSize();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockBoardSize);
-
-  let resizeTimer = null;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(lockBoardSize, 150);
-  });
 
   let isTransitioning = false;
 
   const cycleQuote = () => {
     if (isTransitioning) return;
-    const nextIdx = (currentQuoteIdx + 1) % CHALKBOARD_QUOTES.length;
+    const nextIdx = (currentQuoteIdx + 1) % TEACHER_PROVERBS.length;
 
     if (typeof window.gsap === 'undefined') {
       currentQuoteIdx = nextIdx;
@@ -465,7 +236,7 @@ function setupBlackboardQuotes() {
     const gsap = window.gsap;
     const oldChars = [...quoteEl.querySelectorAll('.q-char'), ...authorEl.querySelectorAll('.q-char')];
 
-    // Bước 1: Các ký tự câu cũ mất dần êm ái từ trái sang phải
+    // 1) Các ký tự câu cũ mất dần êm ái từ trái sang phải
     gsap.to(oldChars, {
       opacity: 0,
       x: 4,
@@ -473,11 +244,11 @@ function setupBlackboardQuotes() {
       duration: 0.65,
       ease: 'power2.inOut',
       stagger: {
-        each: 0.016,
+        each: 0.015,
         from: 'start'
       },
       onComplete: () => {
-        // Bước 2: Dựng câu mới ở trạng thái ẩn và cho hiện dần từ trái sang phải thật mượt
+        // 2) Câu mới hiện dần từ trái sang phải thật mượt mà
         currentQuoteIdx = nextIdx;
         const newChars = renderQuote(currentQuoteIdx);
 
@@ -494,7 +265,7 @@ function setupBlackboardQuotes() {
           duration: 0.85,
           ease: 'power2.out',
           stagger: {
-            each: 0.018,
+            each: 0.017,
             from: 'start'
           },
           onComplete: () => {
@@ -505,61 +276,48 @@ function setupBlackboardQuotes() {
     });
   };
 
-  // Tự động chuyển câu mỗi 15 giây (15000ms)
+  // Tự động đổi câu mỗi 15 giây
   setInterval(cycleQuote, 15000);
 }
 
-// ===== 6. Cuốn sổ tri ân: bấm vào là sang trang ngắm đèn trời =====
-function setupTeacherDeskInteractions() {
-  const notebookEl = document.getElementById('gratitude-notebook');
-  if (!notebookEl) return;
-
-  const goToLanterns = () => {
-    window.location.href = 'view.html';
-  };
-
-  notebookEl.addEventListener('click', goToLanterns);
-  notebookEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      goToLanterns();
-    }
-  });
-}
-
-// ===== 7. Hiệu ứng chiều sâu Parallax & GSAP Intro =====
-function setupParallaxAndIntro() {
+// ===== 3. Chuyển động nền & Intro đồng bộ với send.js =====
+function playIntroAndBlobs() {
   if (typeof window.gsap === 'undefined' || prefersReducedMotion) return;
   const gsap = window.gsap;
 
-  gsap.from('.club-plaque', { y: -28, opacity: 0, duration: 0.85, delay: 0.1, ease: 'power3.out' });
-  gsap.from('.window-frame', { x: -35, opacity: 0, duration: 0.85, delay: 0.2, ease: 'power3.out' });
-  gsap.from('.blackboard', { x: 35, opacity: 0, duration: 0.85, delay: 0.3, ease: 'power3.out' });
-  gsap.from('.teacher-desk', { y: 40, opacity: 0, duration: 0.9, delay: 0.45, ease: 'power3.out' });
-
-  const parallaxItems = document.querySelectorAll('[data-parallax]');
-  window.addEventListener('mousemove', (e) => {
-    const cx = (e.clientX / window.innerWidth - 0.5) * 2;
-    const cy = (e.clientY / window.innerHeight - 0.5) * 2;
-
-    parallaxItems.forEach((el) => {
-      const depth = parseFloat(el.getAttribute('data-parallax') || '0.03');
-      gsap.to(el, {
-        x: cx * depth * 320,
-        y: cy * depth * 220,
-        duration: 0.6,
-        ease: 'power2.out'
-      });
+  // Các quầng sáng .blob trôi nhẹ giống hệt floatBlobs() trong send.js
+  document.querySelectorAll('.blob').forEach((b) => {
+    gsap.to(b, {
+      x: gsap.utils.random(-40, 40),
+      y: gsap.utils.random(-30, 30),
+      duration: gsap.utils.random(6, 10),
+      ease: 'sine.inOut',
+      repeat: -1,
+      yoyo: true
     });
   });
+
+  // Cánh hoa ánh sáng nghiêng nhẹ
+  gsap.to('.hero__floral', {
+    rotation: 2.5,
+    scale: 1.03,
+    duration: 9,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  });
+
+  // Hiệu ứng xuất hiện khi mở trang
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.from('.top-action', { y: -18, opacity: 0, duration: 0.65, stagger: 0.12 })
+    .from('.title__line', { y: 36, opacity: 0, duration: 0.85, stagger: 0.18 }, '-=0.3')
+    .from('.proverb-minimal', { y: 20, opacity: 0, duration: 0.75 }, '-=0.45')
+    .from('.date', { y: 48, opacity: 0, scale: 0.94, duration: 1.0 }, '-=0.55')
+    .from('.checker__sq, .corner-logo', { scale: 0.8, opacity: 0, duration: 0.55, stagger: 0.1 }, '-=0.5');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initUI();
-  playHandwritingTitle();
-  initStarParticles();
-  setupWeatherSystem();
-  setupBlackboardQuotes();
-  setupTeacherDeskInteractions();
-  setupParallaxAndIntro();
+  createSunlightDust();
+  setupProverbRotator();
+  playIntroAndBlobs();
 });
