@@ -451,7 +451,7 @@ class LanternField {
     for (let li = 0; li < laneCount; li++) {
       const lane = {
         y: top + li * spacing + Math.max(0, (spacing - itemH) / 2),
-        speed: (this.reduced ? rand(5, 8) : rand(16, 26)),   // px / giây, trái -> phải
+        speed: (this.reduced ? rand(12, 20) : rand(40, 65)),   // px / giây, trái -> phải
         k: 1,
         hover: false,
         L,
@@ -711,18 +711,29 @@ els.pageNext.addEventListener("click", () => goPage(1));
 /* ---------- Nội dung thư ---------- */
 function fillLetter(w) {
   els.message.textContent = w.message;                       // textContent: chống chèn HTML/XSS
-  els.sign.textContent = "- " + displayName(w);
+  els.sign.textContent = displayName(w);
   els.date.textContent = w.timestamp
     ? new Date(w.timestamp).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "";
 
-  if (isHttpUrl(w.imageUrl)) {
+  const urls = (w.imageUrl || "").split(",").map(s => s.trim()).filter(isHttpUrl);
+  els.photo.innerHTML = "";
+
+  if (urls.length > 0) {
     els.photo.hidden = false;
-    els.photoImg.onerror = () => { els.photo.hidden = true; };
-    els.photoImg.src = w.imageUrl;
+    urls.forEach(url => {
+      const frame = document.createElement("div");
+      frame.className = "photo-frame";
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Ảnh kỷ niệm đính kèm";
+      img.decoding = "async";
+      img.onerror = () => frame.remove();
+      frame.appendChild(img);
+      els.photo.appendChild(frame);
+    });
   } else {
     els.photo.hidden = true;
-    els.photoImg.removeAttribute("src");
   }
 
   pager.page = 0;

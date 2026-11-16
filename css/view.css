@@ -157,14 +157,19 @@ body {
 .deco-pixels::before { top: 0; right: 0; }
 .deco-pixels::after  { bottom: 0; left: 0; }
 
-.brand-logo {
-  position: fixed;
-  right: calc(clamp(16px, 3.2vw, 44px) + env(safe-area-inset-right, 0px));
-  bottom: calc(clamp(14px, 3vw, 40px) + env(safe-area-inset-bottom, 0px));
-  z-index: 60;
-  width: clamp(72px, 9vw, 136px); height: auto;
+.corner-logo {
+  position: absolute;
+  right: clamp(20px, 3vw, 42px);
+  bottom: clamp(16px, 2.5vh, 30px);
+  height: clamp(34px, 4.2vw, 56px);
+  width: auto;
+  z-index: 4;
+  opacity: 0.82;
+  /* Nếu ảnh có nền trắng thì mix-blend-mode: screen cùng filter invert giúp chuyển thành nét trắng mờ giống hệt góc phải dưới của ảnh mẫu */
+  filter: invert(1) brightness(1.8);
+  mix-blend-mode: screen;
   pointer-events: none;
-  filter: drop-shadow(0 2px 10px rgba(196, 0, 0, .28));
+  user-select: none;
 }
 
 /* ---------- Tiêu đề (chữ có chân như ảnh mẫu) ---------- */
@@ -195,6 +200,7 @@ body {
   font-weight: 700;
   font-size: clamp(.9rem, 1.9vw, 1.3rem);
   line-height: 1.4;
+  letter-spacing: .01em;
   text-wrap: balance;
   color: var(--brand-black);
   text-shadow: 0 0 16px rgba(255, 255, 255, .95), 0 0 6px rgba(255, 255, 255, .8);
@@ -653,4 +659,81 @@ body.is-panorama .code-form { opacity: 0; visibility: hidden; }
   .bg-leak::before, .btn-primary.is-pulse, .heart-pop,
   .letter-pages.is-turning { animation: none; }
   .toast, .btn, .hero, .lantern-body, .letter-pages { transition: none; }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --mini-w: 96px;
+    --paper-h: 62dvh;
+    --env-h: 135px;
+  }
+
+  .hero {
+    top: calc(64px + env(safe-area-inset-top, 0px)) !important;
+    padding: 0 12px !important;
+  }
+
+  .hero-title {
+    font-size: 1.1rem !important;
+  }
+
+  .hero-sub {
+    font-size: 0.88rem !important;
+  }
+
+  /* Khung đọc thư mở rộng trên điện thoại cho thầy cô dễ đọc */
+  .letter-stage {
+    width: 94vw !important;
+  }
+
+  .letter-paper {
+    padding: 18px 16px 8px !important;
+  }
+
+  .letter-greeting {
+    font-size: 1.05rem !important;
+  }
+
+  .letter-message {
+    font-size: 0.95rem !important;
+    line-height: 1.75 !important;
+  }
+
+  .photo-frame {
+    max-width: 240px !important;
+    padding: 6px 6px 8px !important;
+  }
+
+  .photo-frame img {
+    max-height: 180px !important;
+  }
+
+  .letter-sign {
+    font-size: 1.5rem !important;
+  }
+
+  /* Nút hành động dưới thư gọn gàng, chừa khoảng trống dưới cho logo & pixel */
+  .letter-actions {
+    gap: 8px !important;
+    margin-top: 12px !important;
+    margin-bottom: 36px !important;
+  }
+
+  .letter-actions .btn {
+    min-height: 40px !important;
+    font-size: 0.8rem !important;
+    padding: 0 12px !important;
+  }
+
+  .deco-pixels {
+    --px: 14px;
+    left: 14px !important;
+    bottom: 14px !important;
+  }
+
+  .brand-logo {
+    right: 14px !important;
+    bottom: 12px !important;
+    width: 55px !important;
+  }
 }
