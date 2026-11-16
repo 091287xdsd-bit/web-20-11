@@ -151,7 +151,7 @@ body {
   will-change: transform, opacity;
 }
 
-/* ---------- Thanh trên: 2 nút ở 2 góc trái & phải, tối giản hòa hợp với background ---------- */
+/* ---------- Thanh trên: 2 nút đồng bộ 1 style sang trọng ---------- */
 .topbar {
   position: relative;
   z-index: 5;
@@ -159,28 +159,83 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding-right: clamp(12px, 5vw, 90px);
+  padding: 0;
 }
 
 .top-action {
   position: relative;
-  display: inline-block;
-  padding: 6px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 22px;
   font-family: var(--font-body);
-  font-size: clamp(15px, 1.55vw, 23px);
+  font-size: clamp(13px, 1.15vw, 16px);
   font-weight: 700;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--night);
-  /* Hòa hợp hoàn toàn với nền giấy sáng ấm seperti ảnh mẫu, đổi màu mượt 2s sang cam khi di chuột */
-  transition: color 2s ease;
+  border-radius: 999px;
+  overflow: hidden;
+
+  /* Dùng chung 1 style nền kem kính mờ, chữ đỏ thẫm, viền vàng cam */
+  color: var(--title-crimson);
+  background: rgba(255, 253, 248, 0.88);
+  border: 1.5px solid rgba(245, 158, 11, 0.55);
+  box-shadow: 0 8px 20px -6px rgba(180, 83, 9, 0.22),
+              inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease,
+              background 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease;
 }
 
+.top-action__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+/* Hiệu ứng vệt sáng lướt qua nút */
+.top-action::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+}
+
+.top-action:hover::before {
+  left: 140%;
+}
+
+/* Khi hover: cả 2 nút đều chuyển sang nền đỏ thẫm, chữ trắng kem nổi bật */
 .top-action:hover,
 .top-action:focus-visible {
-  color: var(--amber);
+  color: #FFFDF8;
+  background: linear-gradient(135deg, var(--title-crimson) 0%, #C81E1E 100%);
+  border-color: var(--amber-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px -6px rgba(158, 11, 15, 0.5),
+              0 0 0 4px rgba(245, 158, 11, 0.22);
   outline: none;
+}
+
+.top-action:hover .top-action__icon {
+  transform: scale(1.12) rotate(-6deg);
 }
 
 /* ---------- Nội dung chính: Tiêu đề + Câu ca dao bên dưới + Số 20/11 ---------- */
@@ -374,5 +429,75 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .top-action {
     transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 18px 16px !important;
+    min-height: 100dvh;
+    justify-content: space-between;
+  }
+
+  .topbar {
+    padding-right: 0 !important;
+    gap: 10px;
+  }
+
+  .top-action {
+    font-size: 12px !important;
+    padding: 8px 13px !important;
+    gap: 6px;
+  }
+
+  .top-action__icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .content {
+    justify-content: flex-start !important;
+    padding-top: 6vh;
+  }
+
+  .title {
+    font-size: clamp(24px, 7.5vw, 36px) !important;
+    line-height: 1.25 !important;
+  }
+
+  .proverb-minimal {
+    max-width: 100% !important;
+    margin-top: 16px !important;
+    min-height: 84px !important;
+  }
+
+  .proverb-minimal__quote {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .proverb-minimal__author {
+    font-size: 17px !important;
+  }
+
+  .date {
+    margin-top: auto !important;
+    margin-bottom: 52px !important;
+    margin-right: 0 !important;
+    font-size: clamp(86px, 28vw, 130px) !important;
+  }
+
+  .checker {
+    left: 16px !important;
+    bottom: 16px !important;
+    width: 32px !important;
+    height: 32px !important;  
+  }
+
+  .corner-logo {
+    right: 16px !important;
+    bottom: 14px !important;
+    width: 55px !important;
+    height: auto !important;
   }
 }

@@ -9,123 +9,123 @@ const rand = (min, max) => Math.random() * (max - min) + min;
 const TEACHER_PROVERBS = [
   {
     quote: '“Vì lợi ích mười năm thì phải trồng cây, vì lợi ích trăm năm thì phải trồng người.”',
-    author: '— Hồ Chí Minh'
+    author: '— Hồ Chí Minh —'
   },
   {
     quote: '“Nghề dạy học là nghề cao quý nhất trong những nghề cao quý, nghề sáng tạo nhất trong những nghề sáng tạo.”',
-    author: '— Phạm Văn Đồng'
+    author: '— Phạm Văn Đồng —'
   },
   {
     quote: '“Dưới ánh mặt trời không có nghề nào cao quý hơn nghề dạy học.”',
-    author: '— Comenius'
+    author: '— Comenius —'
   },
   {
     quote: '“Một người thầy giỏi giống như ngọn nến — cháy hết mình để thắp sáng đường đi cho những người khác.”',
-    author: '— Mustafa Kemal Atatürk'
+    author: '— Mustafa Kemal Atatürk —'
   },
   {
     quote: '“Người thầy trung bình chỉ biết nói, người thầy giỏi biết giải thích, người thầy xuất chúng biết minh họa, người thầy vĩ đại biết truyền cảm hứng.”',
-    author: '— William Arthur Ward'
+    author: '— William Arthur Ward —'
   },
   {
     quote: '“Nghệ thuật tối thượng của người thầy là đánh thức niềm vui trong sự sáng tạo và tri thức.”',
-    author: '— Albert Einstein'
+    author: '— Albert Einstein —'
   },
   {
     quote: '“Tôi mang ơn cha mẹ cho tôi sự sống, nhưng mang ơn thầy tôi vì đã dạy tôi sống cho đẹp.”',
-    author: '— Alexander Đại Đế'
+    author: '— Alexander Đại Đế —'
   },
   {
     quote: '“Giáo dục là vũ khí mạnh nhất mà người ta có thể sử dụng để thay đổi thế giới.”',
-    author: '— Nelson Mandela'
+    author: '— Nelson Mandela —'
   },
   {
     quote: '“Một đứa trẻ, một người thầy, một quyển sách và một cây bút có thể thay đổi cả thế giới.”',
-    author: '— Malala Yousafzai'
+    author: '— Malala Yousafzai —'
   },
   {
     quote: '“Người thầy chạm đến sự vĩnh cửu; không ai có thể biết được ảnh hưởng của người thầy sẽ dừng lại ở đâu.”',
-    author: '— Henry Brooks Adams'
+    author: '— Henry Brooks Adams —'
   },
   {
     quote: '“Những gì người thầy là, quan trọng hơn những gì người thầy dạy.”',
-    author: '— Karl Menninger'
+    author: '— Karl Menninger —'
   },
   {
     quote: '“Nếu một kỹ sư vui mừng nhìn thấy cây cầu mình vừa mới xây xong, người nông dân mỉm cười nhìn đồng lúa mình vừa mới trồng, thì người giáo viên vui sướng khi nhìn thấy học sinh đang trưởng thành, lớn lên.”',
-    author: '— Gô-lô-bô-lin'
+    author: '— Gô-lô-bô-lin —'
   },
   {
     quote: '“Phải tôn kính thầy dạy mình, bởi lẽ nếu cha mẹ cho ta sự sống thì chính các thầy giáo cho ta phương cách sống đàng hoàng tử tế.”',
-    author: '— Philoxène de Cythère'
+    author: '— Philoxène de Cythère —'
   },
   {
     quote: '“Để cho con một hòm vàng không bằng dạy cho con một quyển sách hay.”',
-    author: '— Vi Hiền Truyện'
+    author: '— Vi Hiền Truyện —'
   },
   {
     quote: '“Nhân cách của người thầy là sức mạnh có ảnh hưởng to lớn đối với học sinh, sức mạnh đó không thể thay thế bằng bất kỳ cuốn sách giáo khoa nào.”',
-    author: '— Konstantin Ushinsky'
+    author: '— Konstantin Ushinsky —'
   },
   {
     quote: '“Bậc thầy về nghệ thuật sống không phân biệt rạch ròi giữa công việc và niềm vui, giữa dạy học và truyền lửa.”',
-    author: '— L. P. Jacks'
+    author: '— L. P. Jacks —'
   },
   {
     quote: '“Giáo dục không phải là việc đổ đầy một chiếc bình, mà là thắp lên một ngọn lửa.”',
-    author: '— William Butler Yeats'
+    author: '— William Butler Yeats —'
   },
   {
     quote: '“Thầy giáo là đường tinh lọc, là thỏi vàng nguyên chất trong cuộc đời học trò.”',
-    author: '— Nguyễn Bá Học'
+    author: '— Nguyễn Bá Học —'
   },
   {
     quote: '“Tiên học lễ, hậu học văn.”',
-    author: '— Chu Văn An'
+    author: '— Chu Văn An —'
   },
   {
     quote: '“Hiền tài là nguyên khí của quốc gia.”',
-    author: '— Thân Nhân Trung'
+    author: '— Thân Nhân Trung —'
   },
   {
     quote: '“Ngọc không mài không thành đồ vật, người không học không biết rõ đạo.”',
-    author: '— La Sơn Phu Tử Nguyễn Thiếp'
+    author: '— La Sơn Phu Tử Nguyễn Thiếp —'
   },
   {
     quote: '“Có một nghề bụi phấn bám đầy tay, người ta bảo đó là nghề trong sạch nhất. Có một nghề không trồng cây vào đất, mà mang lại cho Đời đầy trái ngọt hoa tươi.”',
-    author: '— Đinh Văn Nhã'
+    author: '— Đinh Văn Nhã —'
   },
   {
     quote: '“Khi thầy viết bảng, bụi phấn rơi rơi, có hạt bụi nào rơi trên bục giảng, có hạt bụi nào vương trên tóc thầy…”',
-    author: '— Vũ Hoàng'
+    author: '— Vũ Hoàng —'
   },
   {
     quote: '“Muốn sang thì bắc cầu kiều, muốn con hay chữ thì yêu lấy thầy.”',
-    author: '— Ca dao'
+    author: '— Ca dao —'
   },
   {
     quote: '“Cơm cha, áo mẹ, chữ thầy — Gắng công mà học có ngày thành danh.”',
-    author: '— Ca dao'
+    author: '— Ca dao —'
   },
   {
     quote: '“Mười năm rèn luyện sách đèn, công danh gặp bước chớ quên ơn thầy.”',
-    author: '— Ca dao'
+    author: '— Ca dao —'
   },
   {
     quote: '“Gươm vàng rớt xuống Hồ Tây, ơn cha nghĩa trọng công thầy cũng sâu.”',
-    author: '— Ca dao'
+    author: '— Ca dao —'
   },
   {
     quote: '“Ăn quả nhớ kẻ trồng cây, có danh có vọng nhớ thầy khi xưa.”',
-    author: '— Ca dao'
+    author: '— Ca dao —'
   },
   {
     quote: '“Nhất tự vi sư, bán tự vi sư.”',
-    author: '— Tục ngữ'
+    author: '— Tục ngữ —'
   },
   {
     quote: '“Không thầy đố mày làm nên.”',
-    author: '— Tục ngữ'
+    author: '— Tục ngữ —'
   }
 ];
 
