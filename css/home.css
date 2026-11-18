@@ -434,64 +434,81 @@ body {
 
 @media (max-width: 600px) {
   .hero {
-    padding: 18px 16px !important;
+    padding: 16px 16px !important;
     min-height: 100dvh;
-    justify-content: space-between;
+    justify-content: flex-start !important; /* Gom nội dung lên trên, không đẩy giãn ra đáy */
   }
 
+  /* 1. Khóa cứng 2 nút trên cùng luôn thẳng hàng ngang tuyệt đối */
   .topbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     padding-right: 0 !important;
-    gap: 10px;
+    gap: 8px !important;
+    width: 100% !important;
   }
 
   .top-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    height: 38px !important; /* Ép bằng chiều cao nhau 100% */
     font-size: 12px !important;
-    padding: 8px 13px !important;
-    gap: 6px;
+    padding: 0 12px !important;
+    white-space: nowrap !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(245, 158, 11, 0.5) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 2px 8px rgba(180, 68, 12, 0.08) !important;
   }
 
-  .top-action__icon {
-    width: 14px;
-    height: 14px;
-  }
-
+  /* 2. Kéo cụm tiêu đề + ca dao + số 20/11 lại gần nhau thành 1 khối hài hòa */
   .content {
-    justify-content: flex-start !important;
-    padding-top: 6vh;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important; /* Căn giữa cả cụm ở khoảng giữa màn hình */
+    padding-top: 0 !important;
+    padding-bottom: 40px !important;
   }
 
   .title {
-    font-size: clamp(24px, 7.5vw, 36px) !important;
+    font-size: clamp(25px, 7.6vw, 36px) !important;
     line-height: 1.25 !important;
   }
 
   .proverb-minimal {
     max-width: 100% !important;
-    margin-top: 16px !important;
-    min-height: 84px !important;
+    margin-top: 14px !important;
+    min-height: 68px !important;
   }
 
   .proverb-minimal__quote {
     font-size: 15px !important;
-    line-height: 1.55 !important;
+    line-height: 1.5 !important;
   }
 
   .proverb-minimal__author {
     font-size: 17px !important;
   }
 
+  /* Kéo số 20/11 lên ngay dưới câu ca dao thay vì rớt xuống đáy */
   .date {
-    margin-top: auto !important;
-    margin-bottom: 52px !important;
-    margin-right: 0 !important;
-    font-size: clamp(86px, 28vw, 130px) !important;
+    align-self: flex-end !important;
+    margin-top: 12px !important; 
+    margin-bottom: 0 !important;
+    margin-right: 4px !important;
+    font-size: clamp(88px, 28vw, 130px) !important;
+    line-height: 0.9 !important;
   }
 
   .checker {
     left: 16px !important;
     bottom: 16px !important;
-    width: 32px !important;
-    height: 32px !important;  
+    width: 30px !important;
+    height: 30px !important;
   }
 
   .corner-logo {
