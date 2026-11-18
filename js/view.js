@@ -1120,7 +1120,7 @@ function applyWishes(list) {
     field.rebuild(state.panorama);
   } else {
     setStatus("");
-    els.count.textContent = "Đã có " + list.length + " được gửi đến";
+    els.count.textContent = "Đã có " + list.length + " lá thư được gửi đến";
     if (state.letter === "closed") rebuildField(); else state.needRebuild = true;
   }
 
