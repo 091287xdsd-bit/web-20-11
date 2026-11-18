@@ -357,16 +357,26 @@ svg {
   width: 100%;
   margin: 0;
   padding: 0;
+<<<<<<< HEAD
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: 1.2rem;
+=======
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 1.5rem;
+>>>>>>> 89f6c7c8261e250a502abecc76662234760303a0
   line-height: var(--lh);
   color: var(--ink);
   background-color: transparent;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0,
+<<<<<<< HEAD
     transparent calc(33px - 1px),
+=======
+    transparent calc(var(--lh) - 1px),
+>>>>>>> 89f6c7c8261e250a502abecc76662234760303a0
     rgba(180, 150, 90, 0.3) calc(var(--lh) - 1px),
     rgba(180, 150, 90, 0.3) var(--lh)
   );
