@@ -930,7 +930,7 @@ if (mqNarrow.addEventListener) mqNarrow.addEventListener("change", onDesignChang
    KHỞI ĐỘNG
    ========================================================== */
 function init() {
-  const DEADLINE = new Date("2026-11-20T00:00:00").getTime(); 
+  const DEADLINE = new Date("2026-11-21T00:00:00").getTime(); 
   if (Date.now() > DEADLINE) {
     document.body.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;font-family:sans-serif;background:#FFFBF2;color:#1E293B;">
